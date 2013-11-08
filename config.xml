@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<widget xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0" id="MICHELLE-0.1" version="0.1">
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0" id="erdsfsdsf" version="1">
 
-	<name>MICHELLE</name>
-	<description>TEST</description>
-	<author></author>
+	<name>Space Blaster</name>
+	<description>Space shootemup</description>
+	<author>Scirra</author>
 
 	<gap:platforms>
 		<gap:platform name="ios" />

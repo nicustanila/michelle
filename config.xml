@@ -19,8 +19,8 @@
 
 	<feature name="http://api.phonegap.com/1.0/network"/>
 	<preference name="orientation" value="landscape" />
-	<preference name="fullscreen" value="true" />
-	<preference name="target-device" value="universal" />
+	<preference name="fullscreen" value="false" />
+	<preference name="target-device" value="tablet" />
 
 	<!-- Optional splash screen image, e.g.: -->
 	<!-- <gap:splash src="splash.png" width="1024" height="768" /> -->

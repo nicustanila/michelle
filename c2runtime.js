@@ -18594,6 +18594,22 @@ false,false,4684423509323857,false
 				]
 				]
 			]
+,			[
+				14,
+				cr.plugins_.Sprite.prototype.acts.SetOpacity,
+				null,
+				2526778858817997,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						75
+					]
+				]
+				]
+			]
 			]
 		]
 		]

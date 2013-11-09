@@ -13544,6 +13544,86 @@ cr.behaviors.Fade = function(runtime)
 }());
 ;
 ;
+cr.behaviors.Rotate = function(runtime)
+{
+	this.runtime = runtime;
+};
+(function ()
+{
+	var behaviorProto = cr.behaviors.Rotate.prototype;
+	behaviorProto.Type = function(behavior, objtype)
+	{
+		this.behavior = behavior;
+		this.objtype = objtype;
+		this.runtime = behavior.runtime;
+	};
+	var behtypeProto = behaviorProto.Type.prototype;
+	behtypeProto.onCreate = function()
+	{
+	};
+	behaviorProto.Instance = function(type, inst)
+	{
+		this.type = type;
+		this.behavior = type.behavior;
+		this.inst = inst;				// associated object instance to modify
+		this.runtime = type.runtime;
+	};
+	var behinstProto = behaviorProto.Instance.prototype;
+	behinstProto.onCreate = function()
+	{
+		this.speed = cr.to_radians(this.properties[0]);
+		this.acc = cr.to_radians(this.properties[1]);
+	};
+	behinstProto.saveToJSON = function ()
+	{
+		return {
+			"speed": this.speed,
+			"acc": this.acc
+		};
+	};
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.speed = o["speed"];
+		this.acc = o["acc"];
+	};
+	behinstProto.tick = function ()
+	{
+		var dt = this.runtime.getDt(this.inst);
+		if (dt === 0)
+			return;
+		if (this.acc !== 0)
+			this.speed += this.acc * dt;
+		if (this.speed !== 0)
+		{
+			this.inst.angle = cr.clamp_angle(this.inst.angle + this.speed * dt);
+			this.inst.set_bbox_changed();
+		}
+	};
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
+	function Acts() {};
+	Acts.prototype.SetSpeed = function (s)
+	{
+		this.speed = cr.to_radians(s);
+	};
+	Acts.prototype.SetAcceleration = function (a)
+	{
+		this.acc = cr.to_radians(a);
+	};
+	behaviorProto.acts = new Acts();
+	function Exps() {};
+	Exps.prototype.Speed = function (ret)
+	{
+		ret.set_float(cr.to_degrees(this.speed));
+	};
+	Exps.prototype.Acceleration = function (ret)
+	{
+		ret.set_float(cr.to_degrees(this.acc));
+	};
+	behaviorProto.exps = new Exps();
+}());
+;
+;
 cr.behaviors.custom = function(runtime)
 {
 	this.runtime = runtime;
@@ -14136,6 +14216,83 @@ cr.getProjectModel = function() { return [
 		6557226457421605,
 		[]
 	]
+,	[
+		"t11",
+		cr.plugins_.TiledBg,
+		false,
+		[],
+		0,
+		0,
+		["images/tiledbackground7.png", 134503, 0],
+		null,
+		[
+		],
+		false,
+		false,
+		2320301959791413,
+		[]
+	]
+,	[
+		"t12",
+		cr.plugins_.TiledBg,
+		false,
+		[3732148669773422],
+		1,
+		0,
+		["images/tiledbackground7.png", 134503, 0],
+		null,
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			1658120716199974
+		]
+		],
+		false,
+		false,
+		2746234409525077,
+		[]
+	]
+,	[
+		"t13",
+		cr.plugins_.Sprite,
+		false,
+		[8043446327675978],
+		2,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			5723973594909824,
+			[
+				["images/sprite2-sheet0.png", 14568, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.353333,-0.353333,0,-0.486667,0.353333,-0.353333,0.453333,0,0.353333,0.353333,0,0.486667,-0.353333,0.353333,-0.453333,0],0],
+				["images/sprite2-sheet1.png", 12499, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.326667,-0.326667,0,-0.48,0.326667,-0.326667,0.453333,0,0.326667,0.326667,0,0.486667,-0.326667,0.326667,-0.453333,0],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			1979910346786952
+		]
+,		[
+			"Rotate",
+			cr.behaviors.Rotate,
+			3460503936167478
+		]
+		],
+		false,
+		false,
+		7184188355312317,
+		[]
+	]
 	],
 	[
 	],
@@ -14143,7 +14300,7 @@ cr.getProjectModel = function() { return [
 	[
 		"Layout 1",
 		1873,
-		1254,
+		1054,
 		false,
 		"Event sheet 1",
 		5877827337161916,
@@ -14299,30 +14456,25 @@ cr.getProjectModel = function() { return [
 					0
 				]
 			]
-			],
-			[			]
-		]
-,		[
-			"quiz",
-			2,
-			2911214910128066,
-			true,
-			[255, 255, 255],
-			true,
-			1,
-			1,
-			1,
-			false,
-			1,
-			0,
-			0,
-			[
-			[
-				[0, 1080, 0, 1920, 1080, 0, 0, 1, 0, 0, 0, 0, []],
-				9,
-				8,
+,			[
+				[0, 1131, 0, 1920, 620, 0, 0, 1, 0, 0, 0, 0, []],
+				11,
+				6,
 				[
-					[1080]
+				],
+				[
+				],
+				[
+					0,
+					0
+				]
+			]
+,			[
+				[0, 1131, 0, 1920, 620, 0, 0, 1, 0, 0, 0, 0, []],
+				12,
+				10,
+				[
+					[1131]
 				],
 				[
 				[
@@ -14336,48 +14488,29 @@ cr.getProjectModel = function() { return [
 					0
 				]
 			]
-			],
-			[			]
-		]
-		],
-		[
-		],
-		[]
-	]
-,	[
-		"Layout 2",
-		1873,
-		1054,
-		false,
-		"Event sheet 2",
-		9120045194269626,
-		[
-		[
-			"Layer 0",
-			0,
-			5800010483839441,
-			true,
-			[255, 255, 255],
-			false,
-			1,
-			1,
-			1,
-			false,
-			1,
-			0,
-			0,
-			[
-			[
-				[0, 0, 0, 1920, 1080, 0, 0, 1, 0, 0, 0, 0, []],
-				10,
-				10,
+,			[
+				[150, 1958, 0, 150, 150, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				13,
+				8,
 				[
+					[1958]
 				],
 				[
+				[
+					1,
+					5,
+					1
 				],
 				[
 					0,
 					0
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
 				]
 			]
 			],
@@ -15246,7 +15379,7 @@ false,false,4684423509323857,false
 						]
 						,[
 							0,
-							-1
+							-2
 						]
 					]
 				]
@@ -15273,7 +15406,7 @@ false,false,4684423509323857,false
 						]
 						,[
 							0,
-							-1
+							-2
 						]
 					]
 				]
@@ -15300,7 +15433,7 @@ false,false,4684423509323857,false
 						]
 						,[
 							0,
-							-1
+							-2
 						]
 					]
 				]
@@ -15327,7 +15460,7 @@ false,false,4684423509323857,false
 						]
 						,[
 							0,
-							-1
+							-2
 						]
 					]
 				]
@@ -15354,7 +15487,7 @@ false,false,4684423509323857,false
 						]
 						,[
 							0,
-							-1
+							-2
 						]
 					]
 				]
@@ -15381,7 +15514,61 @@ false,false,4684423509323857,false
 						]
 						,[
 							0,
-							-1
+							-2
+						]
+					]
+				]
+				]
+			]
+,			[
+				12,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				9719078977020078,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
+						]
+					]
+				]
+				]
+			]
+,			[
+				13,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				4493123192068953,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
 						]
 					]
 				]
@@ -15389,11 +15576,309 @@ false,false,4684423509323857,false
 			]
 			]
 		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			1290429402300602,
+			[
+			[
+				12,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				6957416185957372,
+				false
+			]
+			],
+			[
+			[
+				12,
+				cr.plugins_.TiledBg.prototype.acts.SetInstanceVar,
+				null,
+				4733623260047804,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						12,
+						cr.plugins_.TiledBg.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				3443446360693215,
+				[
+				[
+					12,
+					cr.plugins_.TiledBg.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					6154196166458413,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							51
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					12,
+					cr.plugins_.TiledBg.prototype.acts.SetY,
+					null,
+					8431930790031405,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							51
+						]
+					]
+					]
+				]
+				]
+			]
+			]
 		]
-	]
-,	[
-		"Event sheet 2",
-		[
+,		[
+			0,
+			null,
+			false,
+			null,
+			4656703352566042,
+			[
+			[
+				13,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				6443756518162612,
+				false
+			]
+			],
+			[
+			[
+				13,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				9359826171286398,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						13,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				8673189244987216,
+				[
+				[
+					13,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					8792495912640105,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					13,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					2212015654904256,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			7752778723144851,
+			[
+			[
+				7,
+				cr.plugins_.Touch.prototype.cnds.OnTouchObject,
+				null,
+				1,
+				false,
+				false,
+				false,
+				657192505608111,
+				false
+				,[
+				[
+					4,
+					13
+				]
+				]
+			]
+			],
+			[
+			[
+				13,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				143398783394761,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				13,
+				cr.behaviors.custom.prototype.acts.RotateAngleOfMotionCounterClockwise,
+				"CustomMovement",
+				9014156978941919,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						360
+					]
+				]
+				]
+			]
+,			[
+				13,
+				cr.behaviors.Rotate.prototype.acts.SetSpeed,
+				"Rotate",
+				7421753102293697,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						90
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				683578601672823,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						3
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.RestartLayout,
+				null,
+				224273280715317,
+				false
+			]
+			]
+		]
 		]
 	]
 	],

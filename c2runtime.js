@@ -15877,6 +15877,26 @@ false,false,4684423509323857,false
 				224273280715317,
 				false
 			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.SetVar,
+				null,
+				1796380815310671,
+				false
+				,[
+				[
+					11,
+					"StartFinished"
+				]
+,				[
+					7,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
 			]
 		]
 		]

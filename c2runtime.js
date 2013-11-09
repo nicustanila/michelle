@@ -15255,7 +15255,7 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
-					"/storage/emulated/0/test.mp4",
+					"/storage/emulated/0/test.m4v",
 					"",
 					"",
 					"",

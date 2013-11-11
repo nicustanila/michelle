@@ -22283,6 +22283,13 @@ false,false,4684423509323857,false
 					]
 					]
 				]
+,				[
+					20,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					7532999876160311,
+					false
+				]
 				]
 			]
 			]
@@ -22384,6 +22391,13 @@ false,false,4684423509323857,false
 						]
 					]
 					]
+				]
+,				[
+					21,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					923318707137276,
+					false
 				]
 				]
 			]
@@ -22487,6 +22501,13 @@ false,false,4684423509323857,false
 					]
 					]
 				]
+,				[
+					22,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					9266219413034852,
+					false
+				]
 				]
 			]
 			]
@@ -22588,6 +22609,13 @@ false,false,4684423509323857,false
 						]
 					]
 					]
+				]
+,				[
+					23,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					4124677764634692,
+					false
 				]
 				]
 			]
@@ -22691,6 +22719,13 @@ false,false,4684423509323857,false
 					]
 					]
 				]
+,				[
+					24,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					4449819090960085,
+					false
+				]
 				]
 			]
 			]
@@ -22792,6 +22827,13 @@ false,false,4684423509323857,false
 						]
 					]
 					]
+				]
+,				[
+					25,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					4096807339014133,
+					false
 				]
 				]
 			]
@@ -22895,6 +22937,13 @@ false,false,4684423509323857,false
 					]
 					]
 				]
+,				[
+					26,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					9452426395381654,
+					false
+				]
 				]
 			]
 			]
@@ -22996,6 +23045,13 @@ false,false,4684423509323857,false
 						]
 					]
 					]
+				]
+,				[
+					29,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					3345673138470658,
+					false
 				]
 				]
 			]
@@ -23862,6 +23918,228 @@ false,false,4684423509323857,false
 					null,
 					527910241569358,
 					false
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			7097656770030545,
+			[
+			[
+				7,
+				cr.plugins_.Touch.prototype.cnds.OnTouchObject,
+				null,
+				1,
+				false,
+				false,
+				false,
+				1903141543913229,
+				false
+				,[
+				[
+					4,
+					42
+				]
+				]
+			]
+			],
+			[
+			[
+				42,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				2494007010232778,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				1727058577224388,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						0.1
+					]
+				]
+				]
+			]
+,			[
+				42,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				8430180061446596,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+,			[
+				43,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				1170036711153806,
+				false
+				,[
+				[
+					3,
+					0
+				]
+				]
+			]
+,			[
+				42,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				1041991880073452,
+				false
+				,[
+				[
+					3,
+					0
+				]
+				]
+			]
+,			[
+				41,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				2708763622468191,
+				false
+				,[
+				[
+					3,
+					0
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				9578740347278925,
+				[
+				[
+					-1,
+					cr.system_object.prototype.cnds.CompareVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					5218375526351142,
+					false
+					,[
+					[
+						11,
+						"activeQuiz"
+					]
+,					[
+						8,
+						0
+					]
+,					[
+						7,
+						[
+							0,
+							1
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					-1,
+					cr.system_object.prototype.acts.SetVar,
+					null,
+					1976272241978969,
+					false
+					,[
+					[
+						11,
+						"activeQuiz"
+					]
+,					[
+						7,
+						[
+							0,
+							2
+						]
+					]
+					]
+				]
+,				[
+					27,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					7089609414044702,
+					false
+					,[
+					[
+						3,
+						0
+					]
+					]
+				]
+,				[
+					28,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					1028278946340628,
+					false
+					,[
+					[
+						3,
+						0
+					]
+					]
+				]
+,				[
+					29,
+					cr.behaviors.custom.prototype.acts.SetSpeed,
+					"CustomMovement",
+					3051232153262946,
+					false
+					,[
+					[
+						3,
+						2
+					]
+,					[
+						0,
+						[
+							0,
+							-300
+						]
+					]
+					]
 				]
 				]
 			]

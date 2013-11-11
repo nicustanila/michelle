@@ -12243,6 +12243,1010 @@ cr.plugins_.Sprite = function(runtime)
 	};
 	pluginProto.exps = new Exps();
 }());
+/* global cr,log,assert2 */
+/* jshint globalstrict: true */
+/* jshint strict: true */
+;
+;
+cr.plugins_.Spritefont2 = function(runtime)
+{
+	this.runtime = runtime;
+};
+(function ()
+{
+	var pluginProto = cr.plugins_.Spritefont2.prototype;
+	pluginProto.onCreate = function ()
+	{
+	};
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+	var typeProto = pluginProto.Type.prototype;
+	typeProto.onCreate = function()
+	{
+		if (this.is_family)
+			return;
+		this.texture_img = new Image();
+		this.texture_img["idtkLoadDisposed"] = true;
+		this.texture_img.src = this.texture_file;
+		this.runtime.wait_for_textures.push(this.texture_img);
+		this.webGL_texture = null;
+	};
+	typeProto.onLostWebGLContext = function ()
+	{
+		if (this.is_family)
+			return;
+		this.webGL_texture = null;
+	};
+	typeProto.onRestoreWebGLContext = function ()
+	{
+		if (this.is_family || !this.instances.length)
+			return;
+		if (!this.webGL_texture)
+		{
+			this.webGL_texture = this.runtime.glwrap.loadTexture(this.texture_img, false, this.runtime.linearSampling, this.texture_pixelformat);
+		}
+		var i, len;
+		for (i = 0, len = this.instances.length; i < len; i++)
+			this.instances[i].webGL_texture = this.webGL_texture;
+	};
+	typeProto.unloadTextures = function ()
+	{
+		if (this.is_family || this.instances.length || !this.webGL_texture)
+			return;
+		this.runtime.glwrap.deleteTexture(this.webGL_texture);
+		this.webGL_texture = null;
+	};
+	typeProto.preloadCanvas2D = function (ctx)
+	{
+		ctx.drawImage(this.texture_img, 0, 0);
+	};
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+	};
+	var instanceProto = pluginProto.Instance.prototype;
+	instanceProto.onDestroy = function()
+	{
+		freeAllLines (this.lines);
+		freeAllClip  (this.clipList);
+		freeAllClipUV(this.clipUV);
+		cr.wipe(this.characterWidthList);
+	};
+	instanceProto.onCreate = function()
+	{
+		this.texture_img      = this.type.texture_img;
+		this.characterWidth   = this.properties[0];
+		this.characterHeight  = this.properties[1];
+		this.characterSet     = this.properties[2];
+		this.text             = this.properties[3];
+		this.characterScale   = this.properties[4];
+		this.visible          = (this.properties[5] === 0);	// 0=visible, 1=invisible
+		this.halign           = this.properties[6]/2.0;			// 0=left, 1=center, 2=right
+		this.valign           = this.properties[7]/2.0;			// 0=top, 1=center, 2=bottom
+		this.wrapbyword       = (this.properties[9] === 0);	// 0=word, 1=character
+		this.characterSpacing = this.properties[10];
+		this.lineHeight       = this.properties[11];
+		this.textWidth  = 0;
+		this.textHeight = 0;
+		if (this.recycled)
+		{
+			this.lines.length = 0;
+			cr.wipe(this.clipList);
+			cr.wipe(this.clipUV);
+			cr.wipe(this.characterWidthList);
+		}
+		else
+		{
+			this.lines = [];
+			this.clipList = {};
+			this.clipUV = {};
+			this.characterWidthList = {};
+		}
+		this.text_changed = true;
+		this.lastwrapwidth = this.width;
+		if (this.runtime.glwrap)
+		{
+			if (!this.type.webGL_texture)
+			{
+				this.type.webGL_texture = this.runtime.glwrap.loadTexture(this.type.texture_img, false, this.runtime.linearSampling, this.type.texture_pixelformat);
+			}
+			this.webGL_texture = this.type.webGL_texture;
+		}
+		this.SplitSheet();
+	};
+	instanceProto.saveToJSON = function ()
+	{
+		var save = {
+			"t": this.text,
+			"csc": this.characterScale,
+			"csp": this.characterSpacing,
+			"lh": this.lineHeight,
+			"tw": this.textWidth,
+			"th": this.textHeight,
+			"lrt": this.last_render_tick,
+			"cw": {}
+		};
+		for (var ch in this.characterWidthList)
+			save["cw"][ch] = this.characterWidthList[ch];
+		return save;
+	};
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.text = o["t"];
+		this.characterScale = o["csc"];
+		this.characterSpacing = o["csp"];
+		this.lineHeight = o["lh"];
+		this.textWidth = o["tw"];
+		this.textHeight = o["th"];
+		this.last_render_tick = o["lrt"];
+		for(var ch in o["cw"])
+			this.characterWidthList[ch] = o["cw"][ch];
+		this.text_changed = true;
+		this.lastwrapwidth = this.width;
+	};
+	function trimRight(text)
+	{
+		return text.replace(/\s\s*$/, '');
+	}
+	var MAX_CACHE_SIZE = 1000;
+	function alloc(cache,Constructor)
+	{
+		if (cache.length)
+			return cache.pop();
+		else
+			return new Constructor();
+	}
+	function free(cache,data)
+	{
+		if (cache.length < MAX_CACHE_SIZE)
+		{
+			cache.push(data);
+		}
+	}
+	function freeAll(cache,dataList,isArray)
+	{
+		if (isArray) {
+			var i, len;
+			for (i = 0, len = dataList.length; i < len; i++)
+			{
+				free(cache,dataList[i]);
+			}
+			dataList.length = 0;
+		} else {
+			var prop;
+			for(prop in dataList) {
+				if(Object.prototype.hasOwnProperty.call(dataList,prop)) {
+					free(cache,dataList[prop]);
+					delete dataList[prop];
+				}
+			}
+		}
+	}
+	function addLine(inst,lineIndex,cur_line) {
+		var lines = inst.lines;
+		var line;
+		cur_line = trimRight(cur_line);
+		if (lineIndex >= lines.length)
+			lines.push(allocLine());
+		line = lines[lineIndex];
+		line.text = cur_line;
+		line.width = inst.measureWidth(cur_line);
+		inst.textWidth = cr.max(inst.textWidth,line.width);
+	}
+	var linesCache = [];
+	function allocLine()       { return alloc(linesCache,Object); }
+	function freeLine(l)       { free(linesCache,l); }
+	function freeAllLines(arr) { freeAll(linesCache,arr,true); }
+	function addClip(obj,property,x,y,w,h) {
+		if (obj[property] === undefined) {
+			obj[property] = alloc(clipCache,Object);
+		}
+		obj[property].x = x;
+		obj[property].y = y;
+		obj[property].w = w;
+		obj[property].h = h;
+	}
+	var clipCache = [];
+	function allocClip()      { return alloc(clipCache,Object); }
+	function freeAllClip(obj) { freeAll(clipCache,obj,false);}
+	function addClipUV(obj,property,left,top,right,bottom) {
+		if (obj[property] === undefined) {
+			obj[property] = alloc(clipUVCache,cr.rect);
+		}
+		obj[property].left   = left;
+		obj[property].top    = top;
+		obj[property].right  = right;
+		obj[property].bottom = bottom;
+	}
+	var clipUVCache = [];
+	function allocClipUV()      { return alloc(clipUVCache,cr.rect);}
+	function freeAllClipUV(obj) { freeAll(clipUVCache,obj,false);}
+	instanceProto.SplitSheet = function() {
+		var texture      = this.texture_img;
+		var texWidth     = texture.width;
+		var texHeight    = texture.height;
+		var charWidth    = this.characterWidth;
+		var charHeight   = this.characterHeight;
+		var charU        = charWidth /texWidth;
+		var charV        = charHeight/texHeight;
+		var charSet      = this.characterSet ;
+		var cols = Math.floor(texWidth/charWidth);
+		var rows = Math.floor(texHeight/charHeight);
+		for ( var c = 0; c < charSet.length; c++) {
+			if  (c >= cols * rows) break;
+			var x = c%cols;
+			var y = Math.floor(c/cols);
+			var letter = charSet.charAt(c);
+			if (this.runtime.glwrap) {
+				addClipUV(
+					this.clipUV, letter,
+					x * charU ,
+					y * charV ,
+					(x+1) * charU ,
+					(y+1) * charV
+				);
+			} else {
+				addClip(
+					this.clipList, letter,
+					x * charWidth,
+					y * charHeight,
+					charWidth,
+					charHeight
+				);
+			}
+		}
+	};
+	/*
+     *	Word-Wrapping
+     */
+	var wordsCache = [];
+	pluginProto.TokeniseWords = function (text)
+	{
+		wordsCache.length = 0;
+		var cur_word = "";
+		var ch;
+		var i = 0;
+		while (i < text.length)
+		{
+			ch = text.charAt(i);
+			if (ch === "\n")
+			{
+				if (cur_word.length)
+				{
+					wordsCache.push(cur_word);
+					cur_word = "";
+				}
+				wordsCache.push("\n");
+				++i;
+			}
+			else if (ch === " " || ch === "\t" || ch === "-")
+			{
+				do {
+					cur_word += text.charAt(i);
+					i++;
+				}
+				while (i < text.length && (text.charAt(i) === " " || text.charAt(i) === "\t"));
+				wordsCache.push(cur_word);
+				cur_word = "";
+			}
+			else if (i < text.length)
+			{
+				cur_word += ch;
+				i++;
+			}
+		}
+		if (cur_word.length)
+			wordsCache.push(cur_word);
+	};
+	pluginProto.WordWrap = function (inst)
+	{
+		var text = inst.text;
+		var lines = inst.lines;
+		if (!text || !text.length)
+		{
+			freeAllLines(lines);
+			return;
+		}
+		var width = inst.width;
+		if (width <= 2.0)
+		{
+			freeAllLines(lines);
+			return;
+		}
+		var charWidth = inst.characterWidth;
+		var charScale = inst.characterScale;
+		var charSpacing = inst.characterSpacing;
+		if ( (text.length * (charWidth * charScale + charSpacing) - charSpacing) <= width && text.indexOf("\n") === -1)
+		{
+			var all_width = inst.measureWidth(text);
+			if (all_width <= width)
+			{
+				freeAllLines(lines);
+				lines.push(allocLine());
+				lines[0].text = text;
+				lines[0].width = all_width;
+				inst.textWidth  = all_width;
+				inst.textHeight = inst.characterHeight * charScale + inst.lineHeight;
+				return;
+			}
+		}
+		var wrapbyword = inst.wrapbyword;
+		this.WrapText(inst);
+		inst.textHeight = lines.length * (inst.characterHeight * charScale + inst.lineHeight);
+	};
+	pluginProto.WrapText = function (inst)
+	{
+		var wrapbyword = inst.wrapbyword;
+		var text       = inst.text;
+		var lines      = inst.lines;
+		var width      = inst.width;
+		var wordArray;
+		if (wrapbyword) {
+			this.TokeniseWords(text);	// writes to wordsCache
+			wordArray = wordsCache;
+		} else {
+			wordArray = text;
+		}
+		var cur_line = "";
+		var prev_line;
+		var line_width;
+		var i;
+		var lineIndex = 0;
+		var line;
+		var ignore_newline = false;
+		for (i = 0; i < wordArray.length; i++)
+		{
+			if (wordArray[i] === "\n")
+			{
+				if (ignore_newline === true) {
+					ignore_newline = false;
+				} else {
+					addLine(inst,lineIndex,cur_line);
+					lineIndex++;
+				}
+				cur_line = "";
+				continue;
+			}
+			ignore_newline = false;
+			prev_line = cur_line;
+			cur_line += wordArray[i];
+			line_width = inst.measureWidth(trimRight(cur_line));
+			if (line_width > width)
+			{
+				if (prev_line === "") {
+					addLine(inst,lineIndex,cur_line);
+					cur_line = "";
+					ignore_newline = true;
+				} else {
+					addLine(inst,lineIndex,prev_line);
+					cur_line = wordArray[i];
+				}
+				lineIndex++;
+				if (!wrapbyword && cur_line === " ")
+					cur_line = "";
+			}
+		}
+		if (trimRight(cur_line).length)
+		{
+			addLine(inst,lineIndex,cur_line);
+			lineIndex++;
+		}
+		for (i = lineIndex; i < lines.length; i++)
+			freeLine(lines[i]);
+		lines.length = lineIndex;
+	};
+	instanceProto.measureWidth = function(text) {
+		var spacing = this.characterSpacing;
+		var len     = text.length;
+		var width   = 0;
+		for (var i = 0; i < len; i++) {
+			width += this.getCharacterWidth(text.charAt(i)) * this.characterScale + spacing;
+		}
+		width -= (width > 0) ? spacing : 0;
+		return width;
+	};
+	/***/
+	instanceProto.getCharacterWidth = function(character) {
+		var widthList = this.characterWidthList;
+		if (widthList[character] !== undefined) {
+			return widthList[character];
+		} else {
+			return this.characterWidth;
+		}
+	};
+	instanceProto.rebuildText = function() {
+		if (this.text_changed || this.width !== this.lastwrapwidth) {
+			this.textWidth = 0;
+			this.textHeight = 0;
+			this.type.plugin.WordWrap(this);
+			this.text_changed = false;
+			this.lastwrapwidth = this.width;
+		}
+	};
+	var EPSILON = 0.00001;
+	instanceProto.draw = function(ctx, glmode)
+	{
+		var texture = this.texture_img;
+		if (this.text !== "" && texture != null) {
+			this.rebuildText();
+			if (this.height < this.characterHeight*this.characterScale + this.lineHeight) {
+				return;
+			}
+			ctx.globalAlpha = this.opacity;
+			var myx = this.x;
+			var myy = this.y;
+			if (this.runtime.pixel_rounding)
+			{
+				myx = (myx + 0.5) | 0;
+				myy = (myy + 0.5) | 0;
+			}
+			ctx.save();
+			ctx.translate(myx, myy);
+			ctx.rotate(this.angle);
+			var ha         = this.halign;
+			var va         = this.valign;
+			var scale      = this.characterScale;
+			var charHeight = this.characterHeight * scale;
+			var lineHeight = this.lineHeight;
+			var charSpace  = this.characterSpacing;
+			var lines = this.lines;
+			var textHeight = this.textHeight;
+			var halign;
+			var valign = va * cr.max(0,(this.height - textHeight));
+			var offx = -(this.hotspotX * this.width);
+			var offy = -(this.hotspotY * this.height);
+			offy += valign;
+			var drawX ;
+			var drawY = offy;
+			for(var i = 0; i < lines.length; i++) {
+				var line = lines[i].text;
+				var len  = lines[i].width;
+				halign = ha * cr.max(0,this.width - len);
+				drawX = offx + halign;
+				drawY += lineHeight;
+				for(var j = 0; j < line.length; j++) {
+					var letter = line.charAt(j);
+					var clip = this.clipList[letter];
+					if ( drawX + this.getCharacterWidth(letter) * scale > this.width + EPSILON ) {
+						break;
+					}
+					if (clip !== undefined) {
+						ctx.drawImage( this.texture_img,
+									 clip.x, clip.y, clip.w, clip.h,
+									 Math.round(drawX),Math.round(drawY),clip.w*scale,clip.h*scale);
+					}
+					drawX  += this.getCharacterWidth(letter) * scale + charSpace;
+				}
+				drawY += charHeight;
+				if ( drawY + charHeight + lineHeight > this.height) {
+					break;
+				}
+			}
+			ctx.restore();
+		}
+	};
+	var dQuad = new cr.quad();
+	function rotateQuad(quad,cosa,sina) {
+		var x_temp;
+		x_temp   = (quad.tlx * cosa) - (quad.tly * sina);
+		quad.tly = (quad.tly * cosa) + (quad.tlx * sina);
+		quad.tlx = x_temp;
+		x_temp    = (quad.trx * cosa) - (quad.try_ * sina);
+		quad.try_ = (quad.try_ * cosa) + (quad.trx * sina);
+		quad.trx  = x_temp;
+		x_temp   = (quad.blx * cosa) - (quad.bly * sina);
+		quad.bly = (quad.bly * cosa) + (quad.blx * sina);
+		quad.blx = x_temp;
+		x_temp    = (quad.brx * cosa) - (quad.bry * sina);
+		quad.bry = (quad.bry * cosa) + (quad.brx * sina);
+		quad.brx  = x_temp;
+	}
+	instanceProto.drawGL = function(glw)
+	{
+		glw.setTexture(this.webGL_texture);
+		glw.setOpacity(this.opacity);
+		if (this.text !== "") {
+			this.rebuildText();
+			if (this.height < this.characterHeight*this.characterScale + this.lineHeight) {
+				return;
+			}
+			this.update_bbox();
+			var q = this.bquad;
+			var ox = 0;
+			var oy = 0;
+			if (this.runtime.pixel_rounding)
+			{
+				ox = ((this.x + 0.5) | 0) - this.x;
+				oy = ((this.y + 0.5) | 0) - this.y;
+			}
+			var angle      = this.angle;
+			var ha         = this.halign;
+			var va         = this.valign;
+			var scale      = this.characterScale;
+			var charHeight = this.characterHeight * scale;   // to precalculate in onCreate or on change
+			var lineHeight = this.lineHeight;
+			var charSpace  = this.characterSpacing;
+			var lines = this.lines;
+			var textHeight = this.textHeight;
+			var cosa,sina;
+			if (angle !== 0)
+			{
+				cosa = Math.cos(angle);
+				sina = Math.sin(angle);
+			}
+			var halign;
+			var valign = va * cr.max(0,(this.height - textHeight));
+			var offx = q.tlx + ox;
+			var offy = q.tly + oy;
+			var drawX ;
+			var drawY = valign;
+			for(var i = 0; i < lines.length; i++) {
+				var line       = lines[i].text;
+				var lineWidth  = lines[i].width;
+				halign = ha * cr.max(0,this.width - lineWidth);
+				drawX = halign;
+				drawY += lineHeight;
+				for(var j = 0; j < line.length; j++) {
+					var letter = line.charAt(j);
+					var clipUV = this.clipUV[letter];
+					if ( drawX + this.getCharacterWidth(letter) * scale  > this.width + EPSILON) {
+						break;
+					}
+					if (clipUV !== undefined) {
+						var clipWidth  = this.characterWidth*scale;
+						var clipHeight = this.characterHeight*scale;
+						dQuad.tlx  = drawX;
+						dQuad.tly  = drawY;
+						dQuad.trx  = drawX + clipWidth;
+						dQuad.try_ = drawY ;
+						dQuad.blx  = drawX;
+						dQuad.bly  = drawY + clipHeight;
+						dQuad.brx  = drawX + clipWidth;
+						dQuad.bry  = drawY + clipHeight;
+						if(angle !== 0)
+						{
+							rotateQuad(dQuad,cosa,sina);
+						}
+						dQuad.offset(offx,offy);
+						glw.quadTex(
+							dQuad.tlx, dQuad.tly,
+							dQuad.trx, dQuad.try_,
+							dQuad.brx, dQuad.bry,
+							dQuad.blx, dQuad.bly,
+							clipUV
+						);
+					}
+					drawX  += this.getCharacterWidth(letter) * scale + charSpace;
+				}
+				drawY += charHeight;
+				if ( drawY + charHeight + lineHeight > this.height) {
+					break;
+				}
+			}
+		}
+	};
+	function Cnds() {}
+	Cnds.prototype.CompareText = function(text_to_compare, case_sensitive)
+	{
+		if (case_sensitive)
+			return this.text == text_to_compare;
+		else
+			return cr.equals_nocase(this.text, text_to_compare);
+	};
+	pluginProto.cnds = new Cnds();
+	function Acts() {}
+	Acts.prototype.SetText = function(param)
+	{
+		if (cr.is_number(param) && param < 1e9)
+			param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
+		var text_to_set = param.toString();
+		if (this.text !== text_to_set)
+		{
+			this.text = text_to_set;
+			this.text_changed = true;
+			this.runtime.redraw = true;
+		}
+	};
+	Acts.prototype.AppendText = function(param)
+	{
+		if (cr.is_number(param))
+			param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
+		var text_to_append = param.toString();
+		if (text_to_append)	// not empty
+		{
+			this.text += text_to_append;
+			this.text_changed = true;
+			this.runtime.redraw = true;
+		}
+	};
+	Acts.prototype.SetScale = function(param)
+	{
+		if (param !== this.characterScale) {
+			this.characterScale = param;
+			this.text_changed = true;
+			this.runtime.redraw = true;
+		}
+	};
+	Acts.prototype.SetCharacterSpacing = function(param)
+	{
+		if (param !== this.CharacterSpacing) {
+			this.characterSpacing = param;
+			this.text_changed = true;
+			this.runtime.redraw = true;
+		}
+	};
+	Acts.prototype.SetLineHeight = function(param)
+	{
+		if (param !== this.lineHeight) {
+			this.lineHeight = param;
+			this.text_changed = true;
+			this.runtime.redraw = true;
+		}
+	};
+	instanceProto.SetCharWidth = function(character,width) {
+		var w = parseInt(width,10);
+		if (this.characterWidthList[character] !== w) {
+			this.characterWidthList[character] = w;
+			this.text_changed = true;
+			this.runtime.redraw = true;
+		}
+	};
+	Acts.prototype.SetCharacterWidth = function(characterSet,width)
+	{
+		if (characterSet !== "") {
+			for(var c = 0; c < characterSet.length; c++) {
+				this.SetCharWidth(characterSet.charAt(c),width);
+			}
+		}
+	};
+	Acts.prototype.SetEffect = function (effect)
+	{
+		this.compositeOp = cr.effectToCompositeOp(effect);
+		cr.setGLBlend(this, effect, this.runtime.gl);
+		this.runtime.redraw = true;
+	};
+	pluginProto.acts = new Acts();
+	function Exps() {}
+	Exps.prototype.CharacterWidth = function(ret,character)
+	{
+		ret.set_int(this.getCharacterWidth(character));
+	};
+	Exps.prototype.CharacterHeight = function(ret)
+	{
+		ret.set_int(this.characterHeight);
+	};
+	Exps.prototype.CharacterScale = function(ret)
+	{
+		ret.set_float(this.characterScale);
+	};
+	Exps.prototype.CharacterSpacing = function(ret)
+	{
+		ret.set_int(this.characterSpacing);
+	};
+	Exps.prototype.LineHeight = function(ret)
+	{
+		ret.set_int(this.lineHeight);
+	};
+	Exps.prototype.Text = function(ret)
+	{
+		ret.set_string(this.text);
+	};
+	Exps.prototype.TextWidth = function (ret)
+	{
+		this.rebuildText();
+		ret.set_float(this.textWidth);
+	};
+	Exps.prototype.TextHeight = function (ret)
+	{
+		this.rebuildText();
+		ret.set_float(this.textHeight);
+	};
+	pluginProto.exps = new Exps();
+}());
+;
+;
+cr.plugins_.TextBox = function(runtime)
+{
+	this.runtime = runtime;
+};
+(function ()
+{
+	var pluginProto = cr.plugins_.TextBox.prototype;
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+	var typeProto = pluginProto.Type.prototype;
+	typeProto.onCreate = function()
+	{
+	};
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+	};
+	var instanceProto = pluginProto.Instance.prototype;
+	var elemTypes = ["text", "password", "email", "number", "tel", "url"];
+	if (navigator.userAgent.indexOf("MSIE 9") > -1)
+	{
+		elemTypes[2] = "text";
+		elemTypes[3] = "text";
+		elemTypes[4] = "text";
+		elemTypes[5] = "text";
+	}
+	instanceProto.onCreate = function()
+	{
+		if (this.runtime.isDomFree)
+		{
+			cr.logexport("[Construct 2] Textbox plugin not supported on this platform - the object will not be created");
+			return;
+		}
+		if (this.properties[7] === 6)	// textarea
+		{
+			this.elem = document.createElement("textarea");
+			jQuery(this.elem).css("resize", "none");
+		}
+		else
+		{
+			this.elem = document.createElement("input");
+			this.elem.type = elemTypes[this.properties[7]];
+		}
+		this.elem.id = this.properties[9];
+		jQuery(this.elem).appendTo(this.runtime.canvasdiv ? this.runtime.canvasdiv : "body");
+		this.elem["autocomplete"] = "off";
+		this.elem.value = this.properties[0];
+		this.elem["placeholder"] = this.properties[1];
+		this.elem.title = this.properties[2];
+		this.elem.disabled = (this.properties[4] === 0);
+		this.elem["readOnly"] = (this.properties[5] === 1);
+		this.elem["spellcheck"] = (this.properties[6] === 1);
+		this.autoFontSize = (this.properties[8] !== 0);
+		this.element_hidden = false;
+		if (this.properties[3] === 0)
+		{
+			jQuery(this.elem).hide();
+			this.visible = false;
+			this.element_hidden = true;
+		}
+		var onchangetrigger = (function (self) {
+			return function() {
+				self.runtime.trigger(cr.plugins_.TextBox.prototype.cnds.OnTextChanged, self);
+			};
+		})(this);
+		this.elem["oninput"] = onchangetrigger;
+		if (navigator.userAgent.indexOf("MSIE") !== -1)
+			this.elem["oncut"] = onchangetrigger;
+		this.elem.onclick = (function (self) {
+			return function(e) {
+				e.stopPropagation();
+				self.runtime.trigger(cr.plugins_.TextBox.prototype.cnds.OnClicked, self);
+			};
+		})(this);
+		this.elem.ondblclick = (function (self) {
+			return function(e) {
+				e.stopPropagation();
+				self.runtime.trigger(cr.plugins_.TextBox.prototype.cnds.OnDoubleClicked, self);
+			};
+		})(this);
+		this.elem.addEventListener("touchstart", function (e) {
+			e.stopPropagation();
+		}, false);
+		this.elem.addEventListener("touchmove", function (e) {
+			e.stopPropagation();
+		}, false);
+		this.elem.addEventListener("touchend", function (e) {
+			e.stopPropagation();
+		}, false);
+		jQuery(this.elem).mousedown(function (e) {
+			e.stopPropagation();
+		});
+		jQuery(this.elem).mouseup(function (e) {
+			e.stopPropagation();
+		});
+		jQuery(this.elem).keydown(function (e) {
+			if (e.which !== 13 && e.which != 27)	// allow enter and escape
+				e.stopPropagation();
+		});
+		jQuery(this.elem).keyup(function (e) {
+			if (e.which !== 13 && e.which != 27)	// allow enter and escape
+				e.stopPropagation();
+		});
+		this.lastLeft = 0;
+		this.lastTop = 0;
+		this.lastRight = 0;
+		this.lastBottom = 0;
+		this.lastWinWidth = 0;
+		this.lastWinHeight = 0;
+		this.updatePosition(true);
+		this.runtime.tickMe(this);
+	};
+	instanceProto.saveToJSON = function ()
+	{
+		return {
+			"text": this.elem.value,
+			"placeholder": this.elem.placeholder,
+			"tooltip": this.elem.title,
+			"disabled": !!this.elem.disabled,
+			"readonly": !!this.elem.readOnly,
+			"spellcheck": !!this.elem["spellcheck"]
+		};
+	};
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.elem.value = o["text"];
+		this.elem.placeholder = o["placeholder"];
+		this.elem.title = o["tooltip"];
+		this.elem.disabled = o["disabled"];
+		this.elem.readOnly = o["readonly"];
+		this.elem["spellcheck"] = o["spellcheck"];
+	};
+	instanceProto.onDestroy = function ()
+	{
+		if (this.runtime.isDomFree)
+				return;
+		jQuery(this.elem).remove();
+		this.elem = null;
+	};
+	instanceProto.tick = function ()
+	{
+		this.updatePosition();
+	};
+	instanceProto.updatePosition = function (first)
+	{
+		if (this.runtime.isDomFree)
+			return;
+		var left = this.layer.layerToCanvas(this.x, this.y, true);
+		var top = this.layer.layerToCanvas(this.x, this.y, false);
+		var right = this.layer.layerToCanvas(this.x + this.width, this.y + this.height, true);
+		var bottom = this.layer.layerToCanvas(this.x + this.width, this.y + this.height, false);
+		if (!this.visible || !this.layer.visible || right <= 0 || bottom <= 0 || left >= this.runtime.width || top >= this.runtime.height)
+		{
+			if (!this.element_hidden)
+				jQuery(this.elem).hide();
+			this.element_hidden = true;
+			return;
+		}
+		if (left < 1)
+			left = 1;
+		if (top < 1)
+			top = 1;
+		if (right >= this.runtime.width)
+			right = this.runtime.width - 1;
+		if (bottom >= this.runtime.height)
+			bottom = this.runtime.height - 1;
+		var curWinWidth = window.innerWidth;
+		var curWinHeight = window.innerHeight;
+		if (!first && this.lastLeft === left && this.lastTop === top && this.lastRight === right && this.lastBottom === bottom && this.lastWinWidth === curWinWidth && this.lastWinHeight === curWinHeight)
+		{
+			if (this.element_hidden)
+			{
+				jQuery(this.elem).show();
+				this.element_hidden = false;
+			}
+			return;
+		}
+		this.lastLeft = left;
+		this.lastTop = top;
+		this.lastRight = right;
+		this.lastBottom = bottom;
+		this.lastWinWidth = curWinWidth;
+		this.lastWinHeight = curWinHeight;
+		if (this.element_hidden)
+		{
+			jQuery(this.elem).show();
+			this.element_hidden = false;
+		}
+		var offx = Math.round(left) + jQuery(this.runtime.canvas).offset().left;
+		var offy = Math.round(top) + jQuery(this.runtime.canvas).offset().top;
+		jQuery(this.elem).css("position", "absolute");
+		jQuery(this.elem).offset({left: offx, top: offy});
+		jQuery(this.elem).width(Math.round(right - left));
+		jQuery(this.elem).height(Math.round(bottom - top));
+		if (this.autoFontSize)
+			jQuery(this.elem).css("font-size", ((this.layer.getScale() / this.runtime.devicePixelRatio) - 0.2) + "em");
+	};
+	instanceProto.draw = function(ctx)
+	{
+	};
+	instanceProto.drawGL = function(glw)
+	{
+	};
+	function Cnds() {};
+	Cnds.prototype.CompareText = function (text, case_)
+	{
+		if (this.runtime.isDomFree)
+			return false;
+		if (case_ === 0)	// insensitive
+			return cr.equals_nocase(this.elem.value, text);
+		else
+			return this.elem.value === text;
+	};
+	Cnds.prototype.OnTextChanged = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnClicked = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnDoubleClicked = function ()
+	{
+		return true;
+	};
+	pluginProto.cnds = new Cnds();
+	function Acts() {};
+	Acts.prototype.SetText = function (text)
+	{
+		if (this.runtime.isDomFree)
+			return;
+		this.elem.value = text;
+	};
+	Acts.prototype.SetPlaceholder = function (text)
+	{
+		if (this.runtime.isDomFree)
+			return;
+		this.elem.placeholder = text;
+	};
+	Acts.prototype.SetTooltip = function (text)
+	{
+		if (this.runtime.isDomFree)
+			return;
+		this.elem.title = text;
+	};
+	Acts.prototype.SetVisible = function (vis)
+	{
+		if (this.runtime.isDomFree)
+			return;
+		this.visible = (vis !== 0);
+	};
+	Acts.prototype.SetEnabled = function (en)
+	{
+		if (this.runtime.isDomFree)
+			return;
+		this.elem.disabled = (en === 0);
+	};
+	Acts.prototype.SetReadOnly = function (ro)
+	{
+		if (this.runtime.isDomFree)
+			return;
+		this.elem.readOnly = (ro === 0);
+	};
+	Acts.prototype.SetFocus = function ()
+	{
+		if (this.runtime.isDomFree)
+			return;
+		this.elem.focus();
+	};
+	Acts.prototype.SetBlur = function ()
+	{
+		if (this.runtime.isDomFree)
+			return;
+		this.elem.blur();
+	};
+	Acts.prototype.SetCSSStyle = function (p, v)
+	{
+		if (this.runtime.isDomFree)
+			return;
+		jQuery(this.elem).css(p, v);
+	};
+	pluginProto.acts = new Acts();
+	function Exps() {};
+	Exps.prototype.Text = function (ret)
+	{
+		if (this.runtime.isDomFree)
+		{
+			ret.set_string("");
+			return;
+		}
+		ret.set_string(this.elem.value);
+	};
+	pluginProto.exps = new Exps();
+}());
 ;
 ;
 cr.plugins_.TiledBg = function(runtime)
@@ -13961,6 +14965,30 @@ cr.getProjectModel = function() { return [
 		false
 	]
 ,	[
+		cr.plugins_.Spritefont2,
+		false,
+		true,
+		true,
+		true,
+		true,
+		true,
+		true,
+		true,
+		true
+	]
+,	[
+		cr.plugins_.TextBox,
+		false,
+		true,
+		true,
+		true,
+		false,
+		false,
+		false,
+		false,
+		false
+	]
+,	[
 		cr.plugins_.TiledBg,
 		false,
 		true,
@@ -14788,6 +15816,247 @@ cr.getProjectModel = function() { return [
 		9932304181042958,
 		[]
 	]
+,	[
+		"t27",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			1369453847902923,
+			[
+				["images/sprite16-sheet0.png", 46666, 0, 0, 236, 207, 1, 0.5, 0.502415,[],[-0.220339,-0.183575,0,-0.497585,0.326271,-0.304348,0.355932,-0.00483093,0.466102,0.458937,0,0.328502,-0.398305,0.381643,-0.0338983,-0.00483093],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			3548749968333331
+		]
+		],
+		false,
+		false,
+		5596524228382591,
+		[]
+	]
+,	[
+		"t28",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			7146004139185259,
+			[
+				["images/sprite17-sheet0.png", 46819, 0, 0, 236, 207, 1, 0.5, 0.502415,[],[-0.326271,-0.304348,0,-0.497585,0.220339,-0.183575,0.0127119,-0.00483093,0.402542,0.386473,0,0.323671,-0.461864,0.454106,-0.355932,-0.00483093],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			370501894122375
+		]
+		],
+		false,
+		false,
+		8878814566328318,
+		[]
+	]
+,	[
+		"t29",
+		cr.plugins_.Sprite,
+		false,
+		[4397411188846527],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			4129822893024033,
+			[
+				["images/sprite18-sheet0.png", 196834, 0, 0, 1099, 207, 1, 0.500455, 0.502415,[],[-0.499545,-0.497585,-0.000909925,-0.26087,0.484986,-0.425121,0.485896,-0.00483093,0.424932,0.101449,-0.000909925,0.434783,-0.425842,0.101449,-0.496815,-0.00483093],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			681177464187536
+		]
+		],
+		false,
+		false,
+		6721679746237398,
+		[]
+	]
+,	[
+		"t30",
+		cr.plugins_.Spritefont2,
+		false,
+		[],
+		0,
+		0,
+		["images/spritefont.png", 1427, 3],
+		null,
+		[
+		],
+		false,
+		false,
+		8752363104591171,
+		[]
+	]
+,	[
+		"t31",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			8567712016522975,
+			[
+				["images/sprite_input_q1-sheet0.png", 36806, 0, 0, 863, 162, 1, 0.500579, 0.5,[],[-0.466976,-0.320988,-0.00115874,-0.308642,0.465817,-0.320988,0.488992,0,0.470452,0.345679,-0.00115874,0.314815,-0.471611,0.345679,-0.488992,0],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			8846158274321217
+		]
+		],
+		false,
+		false,
+		6302748296510922,
+		[]
+	]
+,	[
+		"t32",
+		cr.plugins_.TextBox,
+		false,
+		[],
+		1,
+		0,
+		null,
+		null,
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			5529065011643822
+		]
+		],
+		false,
+		false,
+		8577679120749961,
+		[]
+	]
+,	[
+		"t33",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			7088479538508038,
+			[
+				["images/sprite19-sheet0.png", 22129, 0, 0, 201, 220, 1, 0.502488, 0.5,[],[-0.313433,-0.327273,-0.00497511,-0.5,0.303483,-0.322727,0.497512,0,0.353234,0.368182,-0.00497511,0.5,-0.358209,0.368182,-0.502488,0],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			5263524318276204
+		]
+		],
+		false,
+		false,
+		5157888753070202,
+		[]
+	]
+,	[
+		"t34",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			9371834963314261,
+			[
+				["images/sprite20-sheet0.png", 39019, 0, 0, 200, 220, 1, 0.5, 0.5,[],[-0.31,-0.327273,0,-0.5,0.31,-0.327273,0.5,0,0.355,0.368182,0,0.5,-0.36,0.372727,-0.5,0],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			2586362231805399
+		]
+		],
+		false,
+		false,
+		2861267985325074,
+		[]
+	]
 	],
 	[
 	],
@@ -15305,6 +16574,165 @@ cr.getProjectModel = function() { return [
 					1
 				]
 			]
+,			[
+				[154, 206, 0, 236, 207, 0, 0, 1, 0.5, 0.502415, 0, 0, []],
+				27,
+				24,
+				[
+				],
+				[
+				[
+					0,
+					1.5,
+					0,
+					0,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[1756, 206, 0, 236, 207, 0, 0, 1, 0.5, 0.502415, 0, 0, []],
+				28,
+				25,
+				[
+				],
+				[
+				[
+					0,
+					1.5,
+					0,
+					0,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[945, -500, 0, 1099, 207, 0, 0, 1, 0.500455, 0.502415, 0, 0, []],
+				29,
+				26,
+				[
+					[-500]
+				],
+				[
+				[
+					1,
+					5,
+					1
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[945, 462, 0, 863, 162, 0, 0, 1, 0.500579, 0.5, 0, 0, []],
+				31,
+				27,
+				[
+				],
+				[
+				[
+					0,
+					1.5,
+					0,
+					0,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[566, 417, 0, 751, 87, 0, 0, 1, 0, 0, 0, 0, []],
+				32,
+				28,
+				[
+				],
+				[
+				[
+					0,
+					1.5,
+					0,
+					0,
+					1
+				]
+				],
+				[
+					"",
+					"",
+					"",
+					0,
+					1,
+					0,
+					0,
+					0,
+					1,
+					""
+				]
+			]
+,			[
+				[1532, 465, 0, 201, 220, 0, 0, 1, 0.502488, 0.5, 0, 0, []],
+				33,
+				29,
+				[
+				],
+				[
+				[
+					0,
+					1.5,
+					0,
+					0,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[364, 465, 0, 200, 220, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				34,
+				30,
+				[
+				],
+				[
+				[
+					0,
+					1.5,
+					0,
+					0,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
 			],
 			[			]
 		]
@@ -15490,6 +16918,98 @@ false,false,4684423509323857,false
 							1,
 							-1.2
 						]
+					]
+				]
+				]
+			]
+,			[
+				32,
+				cr.plugins_.TextBox.prototype.acts.SetCSSStyle,
+				null,
+				9012455869293676,
+				false
+				,[
+				[
+					1,
+					[
+						2,
+						"border"
+					]
+				]
+,				[
+					1,
+					[
+						2,
+						"0"
+					]
+				]
+				]
+			]
+,			[
+				32,
+				cr.plugins_.TextBox.prototype.acts.SetCSSStyle,
+				null,
+				1085405998759893,
+				false
+				,[
+				[
+					1,
+					[
+						2,
+						"text-align"
+					]
+				]
+,				[
+					1,
+					[
+						2,
+						"center"
+					]
+				]
+				]
+			]
+,			[
+				32,
+				cr.plugins_.TextBox.prototype.acts.SetCSSStyle,
+				null,
+				79171114210764,
+				false
+				,[
+				[
+					1,
+					[
+						2,
+						"font-size"
+					]
+				]
+,				[
+					1,
+					[
+						2,
+						"50px"
+					]
+				]
+				]
+			]
+,			[
+				32,
+				cr.plugins_.TextBox.prototype.acts.SetCSSStyle,
+				null,
+				7290597324754608,
+				false
+				,[
+				[
+					1,
+					[
+						2,
+						"color"
+					]
+				]
+,				[
+					1,
+					[
+						2,
+						"#6d2020"
 					]
 				]
 				]
@@ -16742,6 +18262,210 @@ false,false,4684423509323857,false
 							-2
 						]
 					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				4394414149000498,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						0.5
+					]
+				]
+				]
+			]
+,			[
+				27,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				4705727724695237,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+,			[
+				27,
+				cr.behaviors.Fade.prototype.acts.StartFade,
+				"Fade",
+				6415847197176383,
+				false
+			]
+,			[
+				28,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				8836969225567752,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+,			[
+				28,
+				cr.behaviors.Fade.prototype.acts.StartFade,
+				"Fade",
+				5485341782152502,
+				false
+			]
+,			[
+				29,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				7145049742304038,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						0,
+						250
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				2286847770963891,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						3.1
+					]
+				]
+				]
+			]
+,			[
+				31,
+				cr.behaviors.Fade.prototype.acts.StartFade,
+				"Fade",
+				2016509662142528,
+				false
+			]
+,			[
+				31,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				1497704626500903,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+,			[
+				32,
+				cr.behaviors.Fade.prototype.acts.StartFade,
+				"Fade",
+				5682750461071669,
+				false
+			]
+,			[
+				32,
+				cr.plugins_.TextBox.prototype.acts.SetVisible,
+				null,
+				5590065524640044,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				9091326669003227,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						0.5
+					]
+				]
+				]
+			]
+,			[
+				34,
+				cr.behaviors.Fade.prototype.acts.StartFade,
+				"Fade",
+				6846667973834593,
+				false
+			]
+,			[
+				34,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				6117915624517093,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				5534164711200961,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						0.5
+					]
+				]
+				]
+			]
+,			[
+				33,
+				cr.behaviors.Fade.prototype.acts.StartFade,
+				"Fade",
+				72584238714494,
+				false
+			]
+,			[
+				33,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				9813766000450188,
+				false
+				,[
+				[
+					3,
+					1
 				]
 				]
 			]
@@ -20303,6 +22027,108 @@ false,false,4684423509323857,false
 			]
 			]
 		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			7750635994988172,
+			[
+			[
+				29,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				7771920902777206,
+				false
+			]
+			],
+			[
+			[
+				29,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				912076498608295,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						29,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				3194755667589496,
+				[
+				[
+					29,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					5429911314880048,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						5
+					]
+,					[
+						7,
+						[
+							0,
+							206
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					29,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					5923126927872395,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							206
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
 		]
 	]
 	],
@@ -20319,7 +22145,7 @@ false,false,4684423509323857,false
 	false,
 	0,
 	true,
-	24,
+	31,
 	false,
 	[
 	]

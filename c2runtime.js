@@ -15357,7 +15357,7 @@ false,false,1349410765624114,false
 			1,
 			"ScrollSpeed",
 			0,
-			350,
+			2800,
 false,false,4684423509323857,false
 		]
 ,		[

@@ -17428,13 +17428,13 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
-					"http://brandup.ro/colin30/videos/1.m4v",
+					"/sdcard/test.m4v",
 					"",
 					"",
 					"",
 					0,
 					1,
-					0,
+					1,
 					0,
 					0,
 					""
@@ -17583,7 +17583,7 @@ false,false,1349410765624114,false
 			1,
 			"ScrollSpeed",
 			0,
-			350,
+			2800,
 false,false,4684423509323857,false
 		]
 ,		[
@@ -23928,9 +23928,25 @@ false,false,4684423509323857,false
 				]
 ,				[
 					40,
-					cr.plugins_.Rex_Video.prototype.acts.Play,
+					cr.plugins_.Rex_Video.prototype.acts.Seek,
 					null,
 					527910241569358,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							0
+						]
+					]
+					]
+				]
+,				[
+					40,
+					cr.plugins_.Rex_Video.prototype.acts.Play,
+					null,
+					9234989983755906,
 					false
 				]
 				]

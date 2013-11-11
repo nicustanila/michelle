@@ -16613,7 +16613,7 @@ cr.getProjectModel = function() { return [
 		cr.plugins_.Sprite,
 		false,
 		[],
-		0,
+		1,
 		0,
 		null,
 		[
@@ -16631,6 +16631,11 @@ cr.getProjectModel = function() { return [
 			]
 		],
 		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			1740983056932445
+		]
 		],
 		false,
 		false,
@@ -17163,7 +17168,7 @@ cr.getProjectModel = function() { return [
 				[
 				[
 					0,
-					1.5,
+					0,
 					0,
 					0,
 					0
@@ -17428,7 +17433,7 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
-					"/sdcard/test.m4v",
+					"http://brandup.ro/colin30/test.mp4",
 					"",
 					"",
 					"",
@@ -17465,6 +17470,13 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
+				[
+					0,
+					0,
+					0,
+					0.5,
+					0
+				]
 				],
 				[
 					1,
@@ -23944,6 +23956,19 @@ false,false,4684423509323857,false
 				]
 ,				[
 					40,
+					cr.plugins_.Rex_Video.prototype.acts.SetAutoplay,
+					null,
+					3648453142104203,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					40,
 					cr.plugins_.Rex_Video.prototype.acts.Play,
 					null,
 					9234989983755906,
@@ -24027,45 +24052,6 @@ false,false,4684423509323857,false
 				]
 				]
 			]
-,			[
-				43,
-				cr.plugins_.Sprite.prototype.acts.SetVisible,
-				null,
-				1170036711153806,
-				false
-				,[
-				[
-					3,
-					0
-				]
-				]
-			]
-,			[
-				42,
-				cr.plugins_.Sprite.prototype.acts.SetVisible,
-				null,
-				1041991880073452,
-				false
-				,[
-				[
-					3,
-					0
-				]
-				]
-			]
-,			[
-				41,
-				cr.plugins_.Sprite.prototype.acts.SetVisible,
-				null,
-				2708763622468191,
-				false
-				,[
-				[
-					3,
-					0
-				]
-				]
-			]
 			]
 			,[
 			[
@@ -24106,6 +24092,39 @@ false,false,4684423509323857,false
 				],
 				[
 				[
+					43,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					1170036711153806,
+					false
+				]
+,				[
+					42,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					1041991880073452,
+					false
+					,[
+					[
+						3,
+						0
+					]
+					]
+				]
+,				[
+					41,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					2708763622468191,
+					false
+					,[
+					[
+						3,
+						0
+					]
+					]
+				]
+,				[
 					-1,
 					cr.system_object.prototype.acts.SetVar,
 					null,
@@ -24148,26 +24167,6 @@ false,false,4684423509323857,false
 					[
 						3,
 						0
-					]
-					]
-				]
-,				[
-					29,
-					cr.behaviors.custom.prototype.acts.SetSpeed,
-					"CustomMovement",
-					3051232153262946,
-					false
-					,[
-					[
-						3,
-						2
-					]
-,					[
-						0,
-						[
-							0,
-							-300
-						]
 					]
 					]
 				]

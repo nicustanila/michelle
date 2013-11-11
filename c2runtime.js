@@ -14538,6 +14538,256 @@ cr.getProjectModel = function() { return [
 		3827298578533876,
 		[]
 	]
+,	[
+		"t20",
+		cr.plugins_.Sprite,
+		false,
+		[8016550761450705],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			9556884202017963,
+			[
+				["images/sprite9-sheet0.png", 9474, 1, 1, 90, 57, 1, 0.5, 0.508772,[],[-0.244444,-0.105263,0,-0.491228,0.322222,-0.0175439,0.377778,0.298246,0,0.473684,-0.366667,0.280702,-0.311111,-0.0175439],0],
+				["images/sprite9-sheet0.png", 9474, 1, 59, 90, 57, 1, 0.5, 0.508772,[],[-0.244444,-0.105263,0,-0.491228,0.322222,-0.0175439,0.377778,0.298246,0,0.473684,-0.366667,0.280702,-0.311111,-0.0175439],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			4469840382219591
+		]
+		],
+		false,
+		false,
+		7979974156894124,
+		[]
+	]
+,	[
+		"t21",
+		cr.plugins_.Sprite,
+		false,
+		[2829751519820962],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			5188244639872302,
+			[
+				["images/sprite10-sheet0.png", 20229, 1, 1, 140, 108, 1, 0.5, 0.5,[],[-0.3,-0.240741,0,-0.287037,0.121429,-0.00925899,0.385714,0,0.278571,0.212963,0,0.472222,-0.278571,0.212963,-0.4,0],0],
+				["images/sprite10-sheet0.png", 20229, 1, 110, 140, 108, 1, 0.5, 0.5,[],[-0.314286,-0.259259,0,-0.287037,0.307143,-0.25,0.385714,0,0.278571,0.212963,0,0.481481,-0.285714,0.222222,-0.407143,0],0],
+				["images/sprite10-sheet1.png", 11590, 0, 0, 140, 108, 1, 0.5, 0.5,[],[-0.314286,-0.259259,0,-0.287037,0.307143,-0.25,0.385714,0,0.278571,0.212963,0,0.462963,-0.285714,0.222222,-0.407143,0],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			314988384175642
+		]
+		],
+		false,
+		false,
+		2558682908030704,
+		[]
+	]
+,	[
+		"t22",
+		cr.plugins_.Sprite,
+		false,
+		[2960065686400402],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			7707323537181679,
+			[
+				["images/sprite11-sheet0.png", 30514, 1, 1, 141, 125, 1, 0.503546, 0.504,[],[-0.22695,-0.192,-0.00709212,-0.488,0.319149,-0.304,0.35461,-0.00800002,0.453901,0.448,-0.00709212,0.32,-0.397163,0.376,-0.0425531,-0.00800002],0],
+				["images/sprite11-sheet0.png", 30514, 1, 127, 141, 125, 1, 0.503546, 0.504,[],[-0.22695,-0.192,-0.00709212,-0.488,0.319149,-0.304,0.347518,-0.00800002,0.453901,0.448,-0.00709212,0.312,-0.397163,0.376,-0.0141841,-0.00800002],0],
+				["images/sprite11-sheet1.png", 11924, 0, 0, 141, 125, 1, 0.503546, 0.504,[],[0.00709188,0.072,-0.00709212,-0.488,0.312057,-0.296,0.283688,-0.00800002,0.453901,0.448,-0.00709212,0.296,-0.397163,0.376,-0.00709212,-0.00800002],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			9089458517186831
+		]
+		],
+		false,
+		false,
+		7869155158901662,
+		[]
+	]
+,	[
+		"t23",
+		cr.plugins_.Sprite,
+		false,
+		[4365878729532209],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			4238401239430669,
+			[
+				["images/sprite13-sheet0.png", 7257, 0, 0, 131, 140, 1, 0.503817, 0.5,[],[-0.496183,-0.492857,-0.00763378,-0.214286,0.358778,-0.371429,0.0381682,0,2.38419e-007,0.035714,-0.00763378,0.5,-0.114504,0.135714,-0.221374,0],0],
+				["images/sprite13-sheet1.png", 9195, 0, 0, 131, 140, 1, 0.503817, 0.5,[],[-0.496183,-0.492857,-0.00763378,-0.214286,0.358778,-0.371429,2.38419e-007,0.035714,-0.00763378,0.5,-0.114504,0.135714,-0.229008,0],0],
+				["images/sprite13-sheet2.png", 6582, 0, 0, 131, 140, 1, 0.503817, 0.5,[],[],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			5907585655043851
+		]
+		],
+		false,
+		false,
+		6880631273675491,
+		[]
+	]
+,	[
+		"t24",
+		cr.plugins_.Sprite,
+		false,
+		[6312168869583531],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			3728669939272897,
+			[
+				["images/sprite12-sheet0.png", 11543, 0, 0, 141, 128, 1, 0.503546, 0.5,[],[-0.446809,-0.4375,-0.00709212,-0.242187,0.297872,-0.28125,0.326241,0,0.234043,0.210938,-0.00709212,0.445313,-0.326241,0.304688,-0.503546,0],0],
+				["images/sprite12-sheet1.png", 14272, 0, 0, 141, 128, 1, 0.503546, 0.5,[],[-0.446809,-0.4375,-0.00709212,-0.242187,0.29078,-0.273437,0.319149,0,0.234043,0.210938,-0.00709212,0.4375,-0.333333,0.3125,-0.503546,0],0],
+				["images/sprite12-sheet2.png", 10962, 0, 0, 141, 128, 1, 0.503546, 0.5,[],[-0.439716,-0.429688,-0.00709212,-0.234375,0.297872,-0.28125,0.319149,0,0.234043,0.210938,-0.00709212,0.039063,-0.326241,0.304688,-0.496454,0],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			2450097249654142
+		]
+		],
+		false,
+		false,
+		8475568766780757,
+		[]
+	]
+,	[
+		"t25",
+		cr.plugins_.Sprite,
+		false,
+		[4773774000695599],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			4495184217247233,
+			[
+				["images/sprite14-sheet0.png", 15065, 1, 1, 90, 142, 1, 0.5, 0.5,[],[-0.3,-0.373239,0,-0.464789,0.211111,-0.316901,0.344444,0,-0.033333,0.161972,0,0.450704,-0.122222,0.260563,-0.022222,0],0],
+				["images/sprite14-sheet0.png", 15065, 92, 1, 90, 142, 1, 0.5, 0.5,[],[-0.3,-0.373239,0,-0.457747,0.211111,-0.316901,0.333333,0,-0.044444,0.15493,0,0.450704,-0.122222,0.260563,-0.022222,0],0],
+				["images/sprite14-sheet1.png", 6148, 0, 0, 90, 142, 1, 0.5, 0.5,[],[-0.288889,-0.366197,0,-0.415493,0.2,-0.309859,0.188889,0,-0.044444,0.15493,0,0.119718,-0.111111,0.253521,-0.011111,0],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			1880207537323464
+		]
+		],
+		false,
+		false,
+		3560360085931409,
+		[]
+	]
+,	[
+		"t26",
+		cr.plugins_.Sprite,
+		false,
+		[9806137091659361],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			9272482310269048,
+			[
+				["images/sprite15-sheet0.png", 6026, 0, 0, 70, 90, 1, 0.5, 0.5,[],[-0.1,-0.188889,0,-0.5,0.3,-0.344444,0.228571,0,0.385714,0.411111,0,0.5,-0.385714,0.411111,-0.271429,0],0],
+				["images/sprite15-sheet1.png", 5932, 0, 0, 70, 90, 1, 0.5, 0.5,[],[-0.1,-0.188889,0,-0.5,0.228571,-0.288889,0.228571,0,0.0428572,0.144444,0,0.5,-0.171429,0.244444,-0.185714,0],0]
+			]
+			]
+		],
+		[
+		[
+			"CustomMovement",
+			cr.behaviors.custom,
+			2861945161554969
+		]
+		],
+		false,
+		false,
+		9932304181042958,
+		[]
+	]
 	],
 	[
 	],
@@ -14899,6 +15149,153 @@ cr.getProjectModel = function() { return [
 				[
 					0,
 					0
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[135, 1958, 0, 90, 57, 0, 0, 1, 0.5, 0.508772, 0, 0, []],
+				20,
+				17,
+				[
+					[1958]
+				],
+				[
+				[
+					1,
+					5,
+					1
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[403, 1958, 0, 140, 108, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				21,
+				18,
+				[
+					[1958]
+				],
+				[
+				[
+					1,
+					5,
+					1
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[685, 1958, 0, 141, 125, 0, 0, 1, 0.503546, 0.504, 0, 0, []],
+				22,
+				19,
+				[
+					[1958]
+				],
+				[
+				[
+					1,
+					5,
+					1
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[980, 1958, 0, 131, 140, 0, 0, 1, 0.503817, 0.5, 0, 0, []],
+				23,
+				20,
+				[
+					[1958]
+				],
+				[
+				[
+					1,
+					5,
+					1
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[1260, 1958, 0, 141, 128, 0, 0, 1, 0.503546, 0.5, 0, 0, []],
+				24,
+				21,
+				[
+					[1958]
+				],
+				[
+				[
+					1,
+					5,
+					1
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[1541, 1958, 0, 90, 142, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				25,
+				22,
+				[
+					[1958]
+				],
+				[
+				[
+					1,
+					5,
+					1
+				]
+				],
+				[
+					0,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[1779, 1958, 0, 70, 90, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				26,
+				23,
+				[
+					[1958]
+				],
+				[
+				[
+					1,
+					5,
+					1
 				]
 				],
 				[
@@ -16159,6 +16556,195 @@ false,false,4684423509323857,false
 				]
 				]
 			]
+,			[
+				20,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				4672930418932127,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
+						]
+					]
+				]
+				]
+			]
+,			[
+				21,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				7569605260482336,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
+						]
+					]
+				]
+				]
+			]
+,			[
+				22,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				9067981391810483,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
+						]
+					]
+				]
+				]
+			]
+,			[
+				23,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				8955125409459301,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
+						]
+					]
+				]
+				]
+			]
+,			[
+				24,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				8244837617357632,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
+						]
+					]
+				]
+				]
+			]
+,			[
+				25,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				6764950778626497,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
+						]
+					]
+				]
+				]
+			]
+,			[
+				26,
+				cr.behaviors.custom.prototype.acts.SetSpeed,
+				"CustomMovement",
+				8578192058029209,
+				false
+				,[
+				[
+					3,
+					2
+				]
+,				[
+					0,
+					[
+						6,
+						[
+							23,
+							"ScrollSpeed"
+						]
+						,[
+							0,
+							-2
+						]
+					]
+				]
+				]
+			]
 			]
 		]
 ,		[
@@ -16408,6 +16994,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				20,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				9237192679024789,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
 				13,
 				cr.behaviors.custom.prototype.acts.RotateAngleOfMotionCounterClockwise,
 				"CustomMovement",
@@ -16513,6 +17115,13 @@ false,false,4684423509323857,false
 					]
 				]
 				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.ResetGlobals,
+				null,
+				4432306556235654,
+				false
 			]
 			]
 		]
@@ -17193,7 +17802,23 @@ false,false,4684423509323857,false
 					0,
 					[
 						0,
-						680
+						675
+					]
+				]
+				]
+			]
+,			[
+				22,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				3625142490550484,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						675
 					]
 				]
 				]
@@ -17225,7 +17850,23 @@ false,false,4684423509323857,false
 					0,
 					[
 						0,
-						690
+						695
+					]
+				]
+				]
+			]
+,			[
+				22,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				1889489814932179,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						695
 					]
 				]
 				]
@@ -17257,7 +17898,23 @@ false,false,4684423509323857,false
 					0,
 					[
 						0,
-						680
+						675
+					]
+				]
+				]
+			]
+,			[
+				22,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				2204278111965573,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						675
 					]
 				]
 				]
@@ -17289,7 +17946,23 @@ false,false,4684423509323857,false
 					0,
 					[
 						0,
-						690
+						695
+					]
+				]
+				]
+			]
+,			[
+				22,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				6673427350709454,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						695
 					]
 				]
 				]
@@ -17321,7 +17994,23 @@ false,false,4684423509323857,false
 					0,
 					[
 						0,
-						680
+						675
+					]
+				]
+				]
+			]
+,			[
+				22,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				5979799593985459,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						675
 					]
 				]
 				]
@@ -17353,7 +18042,23 @@ false,false,4684423509323857,false
 					0,
 					[
 						0,
-						690
+						695
+					]
+				]
+				]
+			]
+,			[
+				22,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				6898821923784969,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						695
 					]
 				]
 				]
@@ -17391,21 +18096,17 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
-				-1,
-				cr.system_object.prototype.acts.SetVar,
+				22,
+				cr.plugins_.Sprite.prototype.acts.SetX,
 				null,
-				5749537671508745,
+				8420618099417293,
 				false
 				,[
 				[
-					11,
-					"Quiz1Answered"
-				]
-,				[
-					7,
+					0,
 					[
 						0,
-						1
+						685
 					]
 				]
 				]
@@ -17483,6 +18184,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				23,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				2404861049527667,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						970
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -17510,6 +18227,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						977
+					]
+				]
+				]
+			]
+,			[
+				23,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				1643150743377279,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						990
 					]
 				]
 				]
@@ -17547,6 +18280,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				23,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				9973644212585988,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						970
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -17574,6 +18323,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						977
+					]
+				]
+				]
+			]
+,			[
+				23,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				7847248026158421,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						990
 					]
 				]
 				]
@@ -17611,6 +18376,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				23,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				711600411476587,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						970
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -17638,6 +18419,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						977
+					]
+				]
+				]
+			]
+,			[
+				23,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				5777150022551404,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						990
 					]
 				]
 				]
@@ -17675,21 +18472,17 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
-				-1,
-				cr.system_object.prototype.acts.SetVar,
+				23,
+				cr.plugins_.Sprite.prototype.acts.SetX,
 				null,
-				478803648379663,
+				6873216574235405,
 				false
 				,[
 				[
-					11,
-					"Quiz2Answered"
-				]
-,				[
-					7,
+					0,
 					[
 						0,
-						1
+						980
 					]
 				]
 				]
@@ -17767,6 +18560,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				24,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				8812325597035775,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1250
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -17794,6 +18603,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						1259
+					]
+				]
+				]
+			]
+,			[
+				24,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				4282122498652321,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1270
 					]
 				]
 				]
@@ -17831,6 +18656,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				24,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				5242202028793927,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1250
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -17858,6 +18699,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						1259
+					]
+				]
+				]
+			]
+,			[
+				24,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				9772514537596873,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1270
 					]
 				]
 				]
@@ -17895,6 +18752,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				24,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				2060509232379427,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1250
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -17922,6 +18795,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						1259
+					]
+				]
+				]
+			]
+,			[
+				24,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				6980608197182599,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1270
 					]
 				]
 				]
@@ -17959,21 +18848,17 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
-				-1,
-				cr.system_object.prototype.acts.SetVar,
+				24,
+				cr.plugins_.Sprite.prototype.acts.SetX,
 				null,
-				4098260816579859,
+				6750363901042559,
 				false
 				,[
 				[
-					11,
-					"Quiz3Answered"
-				]
-,				[
-					7,
+					0,
 					[
 						0,
-						1
+						1260
 					]
 				]
 				]
@@ -18051,6 +18936,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				25,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				3866638945395978,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1531
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -18078,6 +18979,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						1541
+					]
+				]
+				]
+			]
+,			[
+				25,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				2602230217621334,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1551
 					]
 				]
 				]
@@ -18115,6 +19032,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				25,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				8130797468529351,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1531
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -18142,6 +19075,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						1541
+					]
+				]
+				]
+			]
+,			[
+				25,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				6710078741431883,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1551
 					]
 				]
 				]
@@ -18179,6 +19128,22 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				25,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				1780061032139821,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1531
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -18206,6 +19171,22 @@ false,false,4684423509323857,false
 					[
 						0,
 						1541
+					]
+				]
+				]
+			]
+,			[
+				25,
+				cr.plugins_.Sprite.prototype.acts.SetX,
+				null,
+				4022126780149708,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1551
 					]
 				]
 				]
@@ -18243,21 +19224,17 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
-				-1,
-				cr.system_object.prototype.acts.SetVar,
+				25,
+				cr.plugins_.Sprite.prototype.acts.SetX,
 				null,
-				6180618063025746,
+				8682265281432703,
 				false
 				,[
 				[
-					11,
-					"Quiz4Answered"
-				]
-,				[
-					7,
+					0,
 					[
 						0,
-						1
+						1541
 					]
 				]
 				]
@@ -18612,6 +19589,720 @@ false,false,4684423509323857,false
 			]
 			]
 		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			1480970954425998,
+			[
+			[
+				20,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				2351067049201226,
+				false
+			]
+			],
+			[
+			[
+				20,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				2498741107614272,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						20,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				7533907549077093,
+				[
+				[
+					20,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					7261268223679892,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					20,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					1665494491046894,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			1223181712787617,
+			[
+			[
+				21,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				3330047536198694,
+				false
+			]
+			],
+			[
+			[
+				21,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				5841865314929774,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						21,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				75726005586519,
+				[
+				[
+					21,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					2844927901254032,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					21,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					2923059066798164,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			4667386556020175,
+			[
+			[
+				22,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				3466267076369444,
+				false
+			]
+			],
+			[
+			[
+				22,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				7072275216900813,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						22,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				4898187580542185,
+				[
+				[
+					22,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					4225861711640329,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					22,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					7719057626639095,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			8344432960419671,
+			[
+			[
+				23,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				4557993882415268,
+				false
+			]
+			],
+			[
+			[
+				23,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				5656196239732825,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						23,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				769419722811091,
+				[
+				[
+					23,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					2927466455581405,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					23,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					2567196122407159,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			617528749187302,
+			[
+			[
+				24,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				3592484802439042,
+				false
+			]
+			],
+			[
+			[
+				24,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				9424627632966099,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						24,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				1028465653952914,
+				[
+				[
+					24,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					1683564263764325,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					24,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					3862360089888928,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			3272164410900426,
+			[
+			[
+				25,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				1995129233570348,
+				false
+			]
+			],
+			[
+			[
+				25,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				8378579598810491,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						25,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				9117873262798749,
+				[
+				[
+					25,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					1524925049763876,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					25,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					3704690853020493,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			8233753023627803,
+			[
+			[
+				26,
+				cr.behaviors.custom.prototype.cnds.IsMoving,
+				"CustomMovement",
+				0,
+				false,
+				false,
+				false,
+				6661968446835789,
+				false
+			]
+			],
+			[
+			[
+				26,
+				cr.plugins_.Sprite.prototype.acts.SetInstanceVar,
+				null,
+				1100979321870687,
+				false
+				,[
+				[
+					10,
+					0
+				]
+,				[
+					7,
+					[
+						20,
+						26,
+						cr.plugins_.Sprite.prototype.exps.Y,
+						false,
+						null
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				5671087530537519,
+				[
+				[
+					26,
+					cr.plugins_.Sprite.prototype.cnds.CompareInstanceVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					847247799588196,
+					false
+					,[
+					[
+						10,
+						0
+					]
+,					[
+						8,
+						3
+					]
+,					[
+						7,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					26,
+					cr.plugins_.Sprite.prototype.acts.SetY,
+					null,
+					3622060681348457,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							878
+						]
+					]
+					]
+				]
+				]
+			]
+			]
+		]
 		]
 	]
 	],
@@ -18628,7 +20319,7 @@ false,false,4684423509323857,false
 	false,
 	0,
 	true,
-	17,
+	24,
 	false,
 	[
 	]

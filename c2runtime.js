@@ -18650,6 +18650,13 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				6,
+				cr.plugins_.Sprite.prototype.acts.StopAnim,
+				null,
+				9528101777899031,
+				false
+			]
+,			[
 				2,
 				cr.behaviors.custom.prototype.acts.SetEnabled,
 				"CustomMovement",
@@ -23632,6 +23639,13 @@ false,false,4684423509323857,false
 					]
 				]
 				]
+			]
+,			[
+				34,
+				cr.plugins_.Sprite.prototype.acts.StopAnim,
+				null,
+				6151471746291117,
+				false
 			]
 			]
 			,[

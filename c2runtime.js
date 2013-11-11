@@ -17595,7 +17595,7 @@ false,false,1349410765624114,false
 			1,
 			"ScrollSpeed",
 			0,
-			2800,
+			350,
 false,false,4684423509323857,false
 		]
 ,		[
@@ -23194,6 +23194,13 @@ false,false,4684423509323857,false
 					]
 				]
 				]
+			]
+,			[
+				34,
+				cr.plugins_.Sprite.prototype.acts.StopAnim,
+				null,
+				3866938452492043,
+				false
 			]
 			]
 			,[

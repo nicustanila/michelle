@@ -16553,7 +16553,7 @@ cr.getProjectModel = function() { return [
 		cr.plugins_.Sprite,
 		false,
 		[],
-		0,
+		1,
 		0,
 		null,
 		[
@@ -16572,6 +16572,11 @@ cr.getProjectModel = function() { return [
 			]
 		],
 		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			9451942607324129
+		]
 		],
 		false,
 		false,
@@ -16583,7 +16588,7 @@ cr.getProjectModel = function() { return [
 		cr.plugins_.Sprite,
 		false,
 		[],
-		0,
+		1,
 		0,
 		null,
 		[
@@ -16602,6 +16607,11 @@ cr.getProjectModel = function() { return [
 			]
 		],
 		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			952930201582279
+		]
 		],
 		false,
 		false,
@@ -17168,7 +17178,7 @@ cr.getProjectModel = function() { return [
 				[
 				[
 					0,
-					0,
+					1.5,
 					0,
 					0,
 					0
@@ -17492,6 +17502,13 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
+				[
+					0,
+					0,
+					0,
+					0.5,
+					0
+				]
 				],
 				[
 					1,
@@ -17507,6 +17524,13 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
+				[
+					0,
+					0,
+					0,
+					0.5,
+					0
+				]
 				],
 				[
 					1,
@@ -17595,7 +17619,7 @@ false,false,1349410765624114,false
 			1,
 			"ScrollSpeed",
 			0,
-			350,
+			2800,
 false,false,4684423509323857,false
 		]
 ,		[
@@ -23574,9 +23598,9 @@ false,false,4684423509323857,false
 			[
 			[
 				7,
-				cr.plugins_.Touch.prototype.cnds.OnTouchObject,
+				cr.plugins_.Touch.prototype.cnds.IsTouchingObject,
 				null,
-				1,
+				0,
 				false,
 				false,
 				false,
@@ -23947,35 +23971,6 @@ false,false,4684423509323857,false
 				]
 ,				[
 					40,
-					cr.plugins_.Rex_Video.prototype.acts.Seek,
-					null,
-					527910241569358,
-					false
-					,[
-					[
-						0,
-						[
-							0,
-							0
-						]
-					]
-					]
-				]
-,				[
-					40,
-					cr.plugins_.Rex_Video.prototype.acts.SetAutoplay,
-					null,
-					3648453142104203,
-					false
-					,[
-					[
-						3,
-						1
-					]
-					]
-				]
-,				[
-					40,
 					cr.plugins_.Rex_Video.prototype.acts.Play,
 					null,
 					9234989983755906,
@@ -24106,30 +24101,18 @@ false,false,4684423509323857,false
 					false
 				]
 ,				[
-					42,
-					cr.plugins_.Sprite.prototype.acts.SetVisible,
-					null,
-					1041991880073452,
+					41,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					3880378499719915,
 					false
-					,[
-					[
-						3,
-						0
-					]
-					]
 				]
 ,				[
-					41,
-					cr.plugins_.Sprite.prototype.acts.SetVisible,
-					null,
-					2708763622468191,
+					42,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					7067443991872717,
 					false
-					,[
-					[
-						3,
-						0
-					]
-					]
 				]
 ,				[
 					-1,
@@ -24174,6 +24157,139 @@ false,false,4684423509323857,false
 					[
 						3,
 						0
+					]
+					]
+				]
+,				[
+					32,
+					cr.plugins_.TextBox.prototype.acts.SetText,
+					null,
+					7982361953429627,
+					false
+					,[
+					[
+						1,
+						[
+							2,
+							""
+						]
+					]
+					]
+				]
+,				[
+					32,
+					cr.plugins_.TextBox.prototype.acts.SetVisible,
+					null,
+					8066591112656683,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					27,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					5488392571227591,
+					false
+				]
+,				[
+					27,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					7637507420354863,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					28,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					2351244168532911,
+					false
+				]
+,				[
+					28,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					6428235389176537,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					14,
+					cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+					null,
+					3606944937224468,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							2
+						]
+					]
+					]
+				]
+,				[
+					15,
+					cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+					null,
+					9874206949343443,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							0
+						]
+					]
+					]
+				]
+,				[
+					21,
+					cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+					null,
+					7069458991153117,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							2
+						]
+					]
+					]
+				]
+,				[
+					22,
+					cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+					null,
+					4695200398142673,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							0
+						]
 					]
 					]
 				]

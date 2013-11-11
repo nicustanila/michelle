@@ -11093,6 +11093,259 @@ cr.do_cmp = function (x, cmp, y)
 cr.shaders = {};
 ;
 ;
+cr.plugins_.Rex_Video = function(runtime)
+{
+	this.runtime = runtime;
+};
+(function ()
+{
+	var pluginProto = cr.plugins_.Rex_Video.prototype;
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+	var typeProto = pluginProto.Type.prototype;
+	typeProto.onCreate = function()
+	{
+	};
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+	};
+	var instanceProto = pluginProto.Instance.prototype;
+	instanceProto.onCreate = function()
+	{
+		if (this.runtime.isDomFree)
+			return;
+        this.elem = document.createElement("video");
+        var source = document.createElement('source');
+        this.elem.appendChild(source);
+        source.src = this.properties[0];
+        source = document.createElement('source');
+        this.elem.appendChild(source);
+        source.src = this.properties[1];
+        source = document.createElement('source');
+        this.elem.appendChild(source);
+        source.src = this.properties[2];
+        this.elem.poster = this.properties[3];
+        this.elem.autoplay = (this.properties[4]==1);
+        this.elem.controls = (this.properties[5]==1);
+        this.elem.preload = ["auto","metadata","none"][this.properties[6]];
+        this.elem.loop = (this.properties[7]==1);
+        this.elem.muted = (this.properties[8]==1);
+        this.elem.id = this.properties[9];
+        jQuery(this.elem).appendTo(this.runtime.canvasdiv ? this.runtime.canvasdiv : "body");
+        this._pre_ended = false;
+        this._checked_is_playing = false;
+		this.updatePosition();
+		this.runtime.tickMe(this);
+	};
+	instanceProto.onDestroy = function ()
+	{
+		if (this.runtime.isDomFree)
+			return;
+		jQuery(this.elem).remove();
+		this.elem = null;
+	};
+	instanceProto.tick = function ()
+	{
+		this.updatePosition();
+        this.check_ended();
+        this.check_playing();
+	};
+	instanceProto.updatePosition = function ()
+	{
+		var left = this.layer.layerToCanvas(this.x, this.y, true);
+		var top = this.layer.layerToCanvas(this.x, this.y, false);
+		var right = this.layer.layerToCanvas(this.x + this.width, this.y + this.height, true);
+		var bottom = this.layer.layerToCanvas(this.x + this.width, this.y + this.height, false);
+		if (!this.visible || right <= 0 || bottom <= 0 || left >= this.runtime.width || top >= this.runtime.height)
+		{
+			jQuery(this.elem).hide();
+			return;
+		}
+		if (left < 1)
+			left = 1;
+		if (top < 1)
+			top = 1;
+		if (right >= this.runtime.width)
+			right = this.runtime.width - 1;
+		if (bottom >= this.runtime.height)
+			bottom = this.runtime.height - 1;
+		jQuery(this.elem).show();
+		var offx = left + jQuery(this.runtime.canvas).offset().left;
+		var offy = top + jQuery(this.runtime.canvas).offset().top;
+		jQuery(this.elem).offset({left: offx, top: offy});
+		jQuery(this.elem).width(right - left);
+		jQuery(this.elem).height(bottom - top);
+	};
+	instanceProto.draw = function(ctx)
+	{
+	};
+	instanceProto.drawGL = function(glw)
+	{
+	};
+	instanceProto.check_ended = function ()
+	{
+        if (!this._pre_ended && this.elem.ended)
+        {
+            this._checked_is_playing = false;
+            this.runtime.trigger(cr.plugins_.Rex_Video.prototype.cnds.OnEnded, this);
+		}
+        this._pre_ended = this.elem.ended;
+	};
+	instanceProto.check_playing = function()
+	{
+		if((!this._checked_is_playing) &&
+		   (this.elem.currentTime != this.elem.initialTime))
+		{
+			this._checked_is_playing = true;
+			this.runtime.trigger(cr.plugins_.Rex_Video.prototype.cnds.OnPlay, this);
+		}
+	};
+	instanceProto.IsPlaying = function()
+	{
+		return ((!this.elem.paused) && (!this.elem.ended));
+	};
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
+	Cnds.prototype.OnEnded = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.IsEnded = function ()
+	{
+		return this.elem.ended;
+	};
+	Cnds.prototype.OnPlay = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.IsPlaying = function ()
+	{
+		return this.IsPlaying();
+	};
+	Cnds.prototype.CompareCurrentTime = function (cmp, d)
+	{
+	    if (this.IsPlaying())
+		    return cr.do_cmp(this.elem.currentTime, cmp, d);
+		else
+		    return false;
+	};
+	function Acts() {};
+	pluginProto.acts = new Acts();
+	Acts.prototype.SetSource = function (src)
+	{
+		this.elem.src = src;
+	};
+	Acts.prototype.Play = function ()
+	{
+		this.elem.play();
+	};
+	Acts.prototype.Stop = function ()
+	{
+		this.elem.pause();
+		this.elem.initialTime = 0;
+		this.elem.currentTime = 0;
+		this._checked_is_playing = false;
+	};
+	Acts.prototype.Pause = function ()
+	{
+		this._checked_is_playing = false;
+		this.elem.pause();
+	};
+	Acts.prototype.SetControls = function (is_enable)
+	{
+		this.elem.controls = (is_enable==1);
+	};
+	Acts.prototype.SetVolume = function (volume)
+	{
+		this.elem.volume = cr.clamp(volume, 0, 1);
+	};
+	Acts.prototype.SetPoster = function (poster)
+	{
+		this.elem.poster = poster;
+	};
+	Acts.prototype.SetLoop = function (is_enable)
+	{
+		this.elem.loop = (is_enable==1);
+	};
+	Acts.prototype.SetMuted = function (is_enable)
+	{
+		this.elem.muted = (is_enable==1);
+	};
+	Acts.prototype.SetAutoplay = function (is_enable)
+	{
+		this.elem.autoplay = (is_enable==1);
+	};
+	Acts.prototype.SetVisible = function (vis)
+	{
+		this.visible = (vis !== 0);
+	};
+	Acts.prototype.Seek = function (t)
+	{
+		this.elem.currentTime = t;
+	};
+	Acts.prototype.Image2Canvas = function (objType)
+	{
+	    if (objType == null)
+	        return;
+		var sol = objType.getCurrentSol();
+		var instances;
+		if (sol.select_all)
+			instances = sol.type.instances;
+		else
+			instances = sol.instances;
+        var i, cnt=instances.length, canvas_obj, ctx;
+        debugger;
+        for (i=0; i<cnt; i++)
+        {
+            canvas_obj = instances[i];
+            ctx = canvas_obj.ctx;
+            ctx.save();
+			ctx.scale(canvas_obj.canvas.width/this.elem.videoWidth, canvas_obj.canvas.height/this.elem.videoHeight);
+			ctx.rotate(-canvas_obj.angle);
+			ctx.translate(-canvas_obj.bquad.tlx, -canvas_obj.bquad.tly);
+			ctx.drawImage(this.elem, 0, 0);
+			ctx.restore();
+        }
+        this.runtime.redraw = true;
+	};
+	function Exps() {};
+	pluginProto.exps = new Exps();
+	Exps.prototype.CurrentTime = function (ret)
+	{
+		ret.set_float(this.elem.currentTime);
+	};
+	Exps.prototype.IsPaused = function (ret)
+	{
+		ret.set_int(this.elem.paused);
+	};
+	Exps.prototype.IsMuted = function (ret)
+	{
+		ret.set_int(this.elem.muted);
+	};
+	Exps.prototype.Volume = function (ret)
+	{
+		ret.set_float(this.elem.volume);
+	};
+	Exps.prototype.ReadyState = function (ret)
+	{
+		ret.set_int(this.elem.readyState);
+	};
+	Exps.prototype.SourceHeight = function (ret)
+	{
+		ret.set_float(this.elem.videoHeight);
+	};
+	Exps.prototype.SourceWidth = function (ret)
+	{
+		ret.set_float(this.elem.videoWidth);
+	};
+}());
+;
+;
 cr.plugins_.Sprite = function(runtime)
 {
 	this.runtime = runtime;
@@ -15577,6 +15830,18 @@ cr.getProjectModel = function() { return [
 	null,
 	[
 	[
+		cr.plugins_.Rex_Video,
+		false,
+		true,
+		true,
+		true,
+		false,
+		false,
+		false,
+		false,
+		false
+	]
+,	[
 		cr.plugins_.Sprite,
 		false,
 		true,
@@ -16709,6 +16974,229 @@ cr.getProjectModel = function() { return [
 		1927919416397917,
 		[]
 	]
+,	[
+		"t36",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		0,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			3894138488906643,
+			[
+				["images/sprite21-sheet0.png", 1469356, 0, 0, 1920, 1080, 1, 0.5, 0.5,[],[],0]
+			]
+			]
+		],
+		[
+		],
+		false,
+		false,
+		6459114509494053,
+		[]
+	]
+,	[
+		"t37",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			7214582205094833,
+			[
+				["images/sprite21-sheet0.png", 1469356, 0, 0, 1920, 1080, 1, 0.5, 0.5,[],[],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			8052375717458897
+		]
+		],
+		false,
+		false,
+		1019522881734252,
+		[]
+	]
+,	[
+		"t38",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			5929371754075662,
+			[
+				["images/sprite22-sheet0.png", 160001, 1, 1, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet0.png", 160001, 214, 1, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet0.png", 160001, 427, 1, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet0.png", 160001, 640, 1, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet0.png", 160001, 1, 380, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet0.png", 160001, 214, 380, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet0.png", 160001, 427, 380, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet0.png", 160001, 640, 380, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet1.png", 160001, 1, 1, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet1.png", 160001, 214, 1, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet1.png", 160001, 427, 1, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet1.png", 160001, 640, 1, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet1.png", 160001, 1, 380, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet1.png", 160001, 214, 380, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet1.png", 160001, 427, 380, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet1.png", 160001, 640, 380, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet2.png", 124440, 1, 1, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet2.png", 124440, 214, 1, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet2.png", 124440, 427, 1, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0],
+				["images/sprite22-sheet2.png", 124440, 640, 1, 212, 378, 1, 0.5, 0.5,[],[-0.235849,-0.351852,0,-0.481481,0.283019,-0.378307,0.448113,0,0.283019,0.378307,0,0.320106,-0.382075,0.433862,-0.476415,0],0],
+				["images/sprite22-sheet2.png", 124440, 1, 380, 212, 378, 1, 0.5, 0.5,[],[-0.283019,-0.378307,0,-0.481481,0.240566,-0.354497,0.485849,0,0.386792,0.436508,0,0.322751,-0.278302,0.375661,-0.438679,0],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			6108970545291139
+		]
+		],
+		false,
+		false,
+		9200242730048127,
+		[]
+	]
+,	[
+		"t39",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			8821219568224985,
+			[
+				["images/succes-sheet0.png", 1469167, 0, 0, 1920, 1080, 1, 0.5, 0.5,[],[],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			7111568941977655
+		]
+		],
+		false,
+		false,
+		1614911091263623,
+		[]
+	]
+,	[
+		"t40",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		1,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			2832564900988559,
+			[
+				["images/sprite23-sheet0.png", 181252, 1, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet0.png", 181252, 237, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet0.png", 181252, 473, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet0.png", 181252, 709, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet0.png", 181252, 1, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet0.png", 181252, 237, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet0.png", 181252, 473, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet0.png", 181252, 709, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet1.png", 181079, 1, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet1.png", 181079, 237, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet1.png", 181079, 473, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet1.png", 181079, 709, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet1.png", 181079, 1, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet1.png", 181079, 237, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet1.png", 181079, 473, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet1.png", 181079, 709, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet2.png", 180351, 1, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet2.png", 180351, 237, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet2.png", 180351, 473, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet2.png", 180351, 709, 1, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet2.png", 180351, 1, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0],
+				["images/sprite23-sheet2.png", 180351, 237, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.357447,-0.409574,-0.00425529,-0.452128,0.27234,-0.359043,0.446809,0,0.255319,0.348404,-0.00425529,0.5,-0.417021,0.446809,-0.285106,0],0],
+				["images/sprite23-sheet2.png", 180351, 473, 378, 235, 376, 1, 0.502128, 0.5,[],[-0.276596,-0.359043,-0.00425529,-0.452128,0.357447,-0.412234,0.280851,0,0.412766,0.446809,-0.00425529,0.5,-0.255319,0.345745,-0.442553,0],0]
+			]
+			]
+		],
+		[
+		[
+			"Fade",
+			cr.behaviors.Fade,
+			4214050158997852
+		]
+		],
+		false,
+		false,
+		8170748135426254,
+		[]
+	]
+,	[
+		"t41",
+		cr.plugins_.Rex_Video,
+		false,
+		[],
+		0,
+		0,
+		null,
+		null,
+		[
+		],
+		false,
+		false,
+		1261970449894386,
+		[]
+	]
 	],
 	[
 	],
@@ -17325,7 +17813,7 @@ cr.getProjectModel = function() { return [
 					1,
 					0,
 					0,
-					1
+					0
 				]
 				],
 				[
@@ -17408,6 +17896,133 @@ cr.getProjectModel = function() { return [
 			],
 			[			]
 		]
+,		[
+			"overerror",
+			1,
+			9914752715901804,
+			true,
+			[255, 255, 255],
+			true,
+			1,
+			1,
+			1,
+			false,
+			1,
+			0,
+			0,
+			[
+			[
+				[959, 541, 0, 1920, 1080, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				37,
+				32,
+				[
+				],
+				[
+				[
+					0,
+					1,
+					3,
+					1,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[965, 653, 0, 212, 378, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				38,
+				33,
+				[
+				],
+				[
+				[
+					0,
+					1,
+					3,
+					1,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[961, 541, 0, 1920, 1080, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				39,
+				34,
+				[
+				],
+				[
+				[
+					0,
+					1,
+					3,
+					1,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[965, 633, 0, 235, 376, 0, 0, 1, 0.502128, 0.5, 0, 0, []],
+				40,
+				35,
+				[
+				],
+				[
+				[
+					0,
+					1,
+					3,
+					1,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[0, 0, 0, 1920, 1080, 0, 0, 1, 0, 0, 0, 0, []],
+				41,
+				36,
+				[
+				],
+				[
+				],
+				[
+					"/sdcard/test.m4v",
+					"http://brandup.ro/colin30/videos/colin-abroad.m4v",
+					"",
+					"",
+					0,
+					1,
+					2,
+					0,
+					0,
+					""
+				]
+			]
+			],
+			[			]
+		]
 		],
 		[
 		],
@@ -17420,6 +18035,13 @@ cr.getProjectModel = function() { return [
 		[
 		[
 			1,
+			"usedCheats",
+			0,
+			0,
+false,false,8730825635756198,false
+		]
+,		[
+			1,
 			"currentAnswer",
 			1,
 			"",
@@ -17429,7 +18051,7 @@ false,false,5567606486883164,false
 			1,
 			"Quiz1Answer",
 			1,
-			"test",
+			"poohface",
 false,false,7514518088010475,false
 		]
 ,		[
@@ -17478,7 +18100,7 @@ false,false,1349410765624114,false
 			1,
 			"ScrollSpeed",
 			0,
-			350,
+			2800,
 false,false,4684423509323857,false
 		]
 ,		[
@@ -17704,6 +18326,19 @@ false,false,4684423509323857,false
 						2,
 						"#6d2020"
 					]
+				]
+				]
+			]
+,			[
+				41,
+				cr.plugins_.Rex_Video.prototype.acts.SetVisible,
+				null,
+				7789298092346267,
+				false
+				,[
+				[
+					3,
+					0
 				]
 				]
 			]
@@ -22968,20 +23603,126 @@ false,false,4684423509323857,false
 					false
 				]
 ,				[
-					35,
-					cr.plugins_.Text.prototype.acts.SetText,
+					32,
+					cr.plugins_.TextBox.prototype.acts.SetVisible,
 					null,
-					9150650015263964,
+					8738540350125797,
 					false
 					,[
 					[
-						7,
+						3,
+						0
+					]
+					]
+				]
+,				[
+					39,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					1499096798422411,
+					false
+				]
+,				[
+					39,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					5155771328555328,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					40,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					8521039317632866,
+					false
+				]
+,				[
+					40,
+					cr.plugins_.Sprite.prototype.acts.SetAnim,
+					null,
+					6836951162014098,
+					false
+					,[
+					[
+						1,
 						[
 							2,
-							"da"
+							"Default"
+						]
+					]
+,					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					40,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					4241552684840959,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					-1,
+					cr.system_object.prototype.acts.Wait,
+					null,
+					9760843849712949,
+					false
+					,[
+					[
+						0,
+						[
+							1,
+							5
 						]
 					]
 					]
+				]
+,				[
+					32,
+					cr.plugins_.TextBox.prototype.acts.SetVisible,
+					null,
+					391058410813247,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					41,
+					cr.plugins_.Rex_Video.prototype.acts.SetVisible,
+					null,
+					2267607572752534,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					41,
+					cr.plugins_.Rex_Video.prototype.acts.Play,
+					null,
+					9452219266041909,
+					false
 				]
 				]
 			]
@@ -23051,27 +23792,238 @@ false,false,4684423509323857,false
 				],
 				[
 				[
-					35,
-					cr.plugins_.Text.prototype.acts.SetText,
+					32,
+					cr.plugins_.TextBox.prototype.acts.SetBlur,
 					null,
-					3910019952024858,
+					9914612240041169,
+					false
+				]
+,				[
+					32,
+					cr.plugins_.TextBox.prototype.acts.SetVisible,
+					null,
+					5074628812207065,
 					false
 					,[
 					[
-						7,
+						3,
+						0
+					]
+					]
+				]
+,				[
+					37,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					1103029035091547,
+					false
+				]
+,				[
+					37,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					8473033224446015,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					38,
+					cr.behaviors.Fade.prototype.acts.StartFade,
+					"Fade",
+					4589011567312691,
+					false
+				]
+,				[
+					38,
+					cr.plugins_.Sprite.prototype.acts.SetAnim,
+					null,
+					7740755733795506,
+					false
+					,[
+					[
+						1,
 						[
 							2,
-							"nu"
+							"Default"
+						]
+					]
+,					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					38,
+					cr.plugins_.Sprite.prototype.acts.SetVisible,
+					null,
+					805432501880519,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					-1,
+					cr.system_object.prototype.acts.Wait,
+					null,
+					7296861831096491,
+					false
+					,[
+					[
+						0,
+						[
+							0,
+							5
 						]
 					]
 					]
 				]
 ,				[
 					32,
-					cr.plugins_.TextBox.prototype.acts.SetBlur,
+					cr.plugins_.TextBox.prototype.acts.SetVisible,
 					null,
-					9914612240041169,
+					6425137725683407,
 					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			1741117993740641,
+			[
+			[
+				7,
+				cr.plugins_.Touch.prototype.cnds.OnTouchObject,
+				null,
+				1,
+				false,
+				false,
+				false,
+				6998957078367342,
+				false
+				,[
+				[
+					4,
+					34
+				]
+				]
+			]
+			],
+			[
+			[
+				-1,
+				cr.system_object.prototype.acts.SetVar,
+				null,
+				9934645378603343,
+				false
+				,[
+				[
+					11,
+					"usedCheats"
+				]
+,				[
+					7,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				6711048545351815,
+				[
+				[
+					-1,
+					cr.system_object.prototype.cnds.CompareVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					6533838680826994,
+					false
+					,[
+					[
+						11,
+						"activeQuiz"
+					]
+,					[
+						8,
+						0
+					]
+,					[
+						7,
+						[
+							0,
+							1
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					32,
+					cr.plugins_.TextBox.prototype.acts.SetText,
+					null,
+					3252161701809136,
+					false
+					,[
+					[
+						1,
+						[
+							23,
+							"Quiz1Answer"
+						]
+					]
+					]
+				]
+,				[
+					-1,
+					cr.system_object.prototype.acts.SetVar,
+					null,
+					7431149038897232,
+					false
+					,[
+					[
+						11,
+						"currentAnswer"
+					]
+,					[
+						7,
+						[
+							23,
+							"Quiz1Answer"
+						]
+					]
+					]
 				]
 				]
 			]
@@ -23093,7 +24045,7 @@ false,false,4684423509323857,false
 	false,
 	0,
 	true,
-	32,
+	37,
 	false,
 	[
 	]

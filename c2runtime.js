@@ -13202,630 +13202,6 @@ cr.plugins_.Spritefont2 = function(runtime)
 }());
 ;
 ;
-cr.plugins_.Text = function(runtime)
-{
-	this.runtime = runtime;
-};
-(function ()
-{
-	var pluginProto = cr.plugins_.Text.prototype;
-	pluginProto.onCreate = function ()
-	{
-		pluginProto.acts.SetWidth = function (w)
-		{
-			if (this.width !== w)
-			{
-				this.width = w;
-				this.text_changed = true;	// also recalculate text wrapping
-				this.set_bbox_changed();
-			}
-		};
-	};
-	pluginProto.Type = function(plugin)
-	{
-		this.plugin = plugin;
-		this.runtime = plugin.runtime;
-	};
-	var typeProto = pluginProto.Type.prototype;
-	typeProto.onCreate = function()
-	{
-	};
-	typeProto.onLostWebGLContext = function ()
-	{
-		if (this.is_family)
-			return;
-		var i, len, inst;
-		for (i = 0, len = this.instances.length; i < len; i++)
-		{
-			inst = this.instances[i];
-			inst.mycanvas = null;
-			inst.myctx = null;
-			inst.mytex = null;
-		}
-	};
-	pluginProto.Instance = function(type)
-	{
-		this.type = type;
-		this.runtime = type.runtime;
-		if (this.recycled)
-			this.lines.length = 0;
-		else
-			this.lines = [];		// for word wrapping
-		this.text_changed = true;
-	};
-	var instanceProto = pluginProto.Instance.prototype;
-	var requestedWebFonts = {};		// already requested web fonts have an entry here
-	instanceProto.onCreate = function()
-	{
-		this.text = this.properties[0];
-		this.visible = (this.properties[1] === 0);		// 0=visible, 1=invisible
-		this.font = this.properties[2];
-		this.color = this.properties[3];
-		this.halign = this.properties[4];				// 0=left, 1=center, 2=right
-		this.valign = this.properties[5];				// 0=top, 1=center, 2=bottom
-		this.wrapbyword = (this.properties[7] === 0);	// 0=word, 1=character
-		this.lastwidth = this.width;
-		this.lastwrapwidth = this.width;
-		this.lastheight = this.height;
-		this.line_height_offset = this.properties[8];
-		this.facename = "";
-		this.fontstyle = "";
-		this.ptSize = 0;
-		this.textWidth = 0;
-		this.textHeight = 0;
-		this.parseFont();
-		this.mycanvas = null;
-		this.myctx = null;
-		this.mytex = null;
-		this.need_text_redraw = false;
-		this.last_render_tick = this.runtime.tickcount;
-		if (this.recycled)
-			this.rcTex.set(0, 0, 1, 1);
-		else
-			this.rcTex = new cr.rect(0, 0, 1, 1);
-		if (this.runtime.glwrap)
-			this.runtime.tickMe(this);
-;
-	};
-	instanceProto.parseFont = function ()
-	{
-		var arr = this.font.split(" ");
-		var i;
-		for (i = 0; i < arr.length; i++)
-		{
-			if (arr[i].substr(arr[i].length - 2, 2) === "pt")
-			{
-				this.ptSize = parseInt(arr[i].substr(0, arr[i].length - 2));
-				this.pxHeight = Math.ceil((this.ptSize / 72.0) * 96.0) + 4;	// assume 96dpi...
-				if (i > 0)
-					this.fontstyle = arr[i - 1];
-				this.facename = arr[i + 1];
-				for (i = i + 2; i < arr.length; i++)
-					this.facename += " " + arr[i];
-				break;
-			}
-		}
-	};
-	instanceProto.saveToJSON = function ()
-	{
-		return {
-			"t": this.text,
-			"f": this.font,
-			"c": this.color,
-			"ha": this.halign,
-			"va": this.valign,
-			"wr": this.wrapbyword,
-			"lho": this.line_height_offset,
-			"fn": this.facename,
-			"fs": this.fontstyle,
-			"ps": this.ptSize,
-			"pxh": this.pxHeight,
-			"tw": this.textWidth,
-			"th": this.textHeight,
-			"lrt": this.last_render_tick
-		};
-	};
-	instanceProto.loadFromJSON = function (o)
-	{
-		this.text = o["t"];
-		this.font = o["f"];
-		this.color = o["c"];
-		this.halign = o["ha"];
-		this.valign = o["va"];
-		this.wrapbyword = o["wr"];
-		this.line_height_offset = o["lho"];
-		this.facename = o["fn"];
-		this.fontstyle = o["fs"];
-		this.ptSize = o["ps"];
-		this.pxHeight = o["pxh"];
-		this.textWidth = o["tw"];
-		this.textHeight = o["th"];
-		this.last_render_tick = o["lrt"];
-		this.text_changed = true;
-		this.lastwidth = this.width;
-		this.lastwrapwidth = this.width;
-		this.lastheight = this.height;
-	};
-	instanceProto.tick = function ()
-	{
-		if (this.runtime.glwrap && this.mytex && (this.runtime.tickcount - this.last_render_tick >= 300))
-		{
-			var layer = this.layer;
-            this.update_bbox();
-            var bbox = this.bbox;
-            if (bbox.right < layer.viewLeft || bbox.bottom < layer.viewTop || bbox.left > layer.viewRight || bbox.top > layer.viewBottom)
-			{
-				this.runtime.glwrap.deleteTexture(this.mytex);
-				this.mytex = null;
-				this.myctx = null;
-				this.mycanvas = null;
-			}
-		}
-	};
-	instanceProto.onDestroy = function ()
-	{
-		this.myctx = null;
-		this.mycanvas = null;
-		if (this.runtime.glwrap && this.mytex)
-			this.runtime.glwrap.deleteTexture(this.mytex);
-		this.mytex = null;
-	};
-	instanceProto.updateFont = function ()
-	{
-		this.font = this.fontstyle + " " + this.ptSize.toString() + "pt " + this.facename;
-		this.text_changed = true;
-		this.runtime.redraw = true;
-	};
-	instanceProto.draw = function(ctx, glmode)
-	{
-		ctx.font = this.font;
-		ctx.textBaseline = "top";
-		ctx.fillStyle = this.color;
-		ctx.globalAlpha = glmode ? 1 : this.opacity;
-		var myscale = 1;
-		if (glmode)
-		{
-			myscale = this.layer.getScale();
-			ctx.save();
-			ctx.scale(myscale, myscale);
-		}
-		if (this.text_changed || this.width !== this.lastwrapwidth)
-		{
-			this.type.plugin.WordWrap(this.text, this.lines, ctx, this.width, this.wrapbyword);
-			this.text_changed = false;
-			this.lastwrapwidth = this.width;
-		}
-		this.update_bbox();
-		var penX = glmode ? 0 : this.bquad.tlx;
-		var penY = glmode ? 0 : this.bquad.tly;
-		if (this.runtime.pixel_rounding)
-		{
-			penX = (penX + 0.5) | 0;
-			penY = (penY + 0.5) | 0;
-		}
-		if (this.angle !== 0 && !glmode)
-		{
-			ctx.save();
-			ctx.translate(penX, penY);
-			ctx.rotate(this.angle);
-			penX = 0;
-			penY = 0;
-		}
-		var endY = penY + this.height;
-		var line_height = this.pxHeight;
-		line_height += (this.line_height_offset * this.runtime.devicePixelRatio);
-		var drawX;
-		var i;
-		if (this.valign === 1)		// center
-			penY += Math.max(this.height / 2 - (this.lines.length * line_height) / 2, 0);
-		else if (this.valign === 2)	// bottom
-			penY += Math.max(this.height - (this.lines.length * line_height) - 2, 0);
-		for (i = 0; i < this.lines.length; i++)
-		{
-			drawX = penX;
-			if (this.halign === 1)		// center
-				drawX = penX + (this.width - this.lines[i].width) / 2;
-			else if (this.halign === 2)	// right
-				drawX = penX + (this.width - this.lines[i].width);
-			ctx.fillText(this.lines[i].text, drawX, penY);
-			penY += line_height;
-			if (penY >= endY - line_height)
-				break;
-		}
-		if (this.angle !== 0 || glmode)
-			ctx.restore();
-		this.last_render_tick = this.runtime.tickcount;
-	};
-	instanceProto.drawGL = function(glw)
-	{
-		if (this.width < 1 || this.height < 1)
-			return;
-		var need_redraw = this.text_changed || this.need_text_redraw;
-		this.need_text_redraw = false;
-		var layer_scale = this.layer.getScale();
-		var layer_angle = this.layer.getAngle();
-		var rcTex = this.rcTex;
-		var floatscaledwidth = layer_scale * this.width;
-		var floatscaledheight = layer_scale * this.height;
-		var scaledwidth = Math.ceil(floatscaledwidth);
-		var scaledheight = Math.ceil(floatscaledheight);
-		var windowWidth = this.runtime.width;
-		var windowHeight = this.runtime.height;
-		var halfw = windowWidth / 2;
-		var halfh = windowHeight / 2;
-		if (!this.myctx)
-		{
-			this.mycanvas = document.createElement("canvas");
-			this.mycanvas.width = scaledwidth;
-			this.mycanvas.height = scaledheight;
-			this.lastwidth = scaledwidth;
-			this.lastheight = scaledheight;
-			need_redraw = true;
-			this.myctx = this.mycanvas.getContext("2d");
-		}
-		if (scaledwidth !== this.lastwidth || scaledheight !== this.lastheight)
-		{
-			this.mycanvas.width = scaledwidth;
-			this.mycanvas.height = scaledheight;
-			if (this.mytex)
-			{
-				glw.deleteTexture(this.mytex);
-				this.mytex = null;
-			}
-			need_redraw = true;
-		}
-		if (need_redraw)
-		{
-			this.myctx.clearRect(0, 0, scaledwidth, scaledheight);
-			this.draw(this.myctx, true);
-			if (!this.mytex)
-				this.mytex = glw.createEmptyTexture(scaledwidth, scaledheight, this.runtime.linearSampling, this.runtime.isMobile);
-			glw.videoToTexture(this.mycanvas, this.mytex, this.runtime.isMobile);
-		}
-		this.lastwidth = scaledwidth;
-		this.lastheight = scaledheight;
-		glw.setTexture(this.mytex);
-		glw.setOpacity(this.opacity);
-		glw.resetModelView();
-		glw.translate(-halfw, -halfh);
-		glw.updateModelView();
-		var q = this.bquad;
-		var tlx = this.layer.layerToCanvas(q.tlx, q.tly, true);
-		var tly = this.layer.layerToCanvas(q.tlx, q.tly, false);
-		var trx = this.layer.layerToCanvas(q.trx, q.try_, true);
-		var try_ = this.layer.layerToCanvas(q.trx, q.try_, false);
-		var brx = this.layer.layerToCanvas(q.brx, q.bry, true);
-		var bry = this.layer.layerToCanvas(q.brx, q.bry, false);
-		var blx = this.layer.layerToCanvas(q.blx, q.bly, true);
-		var bly = this.layer.layerToCanvas(q.blx, q.bly, false);
-		if (this.runtime.pixel_rounding || (this.angle === 0 && layer_angle === 0))
-		{
-			var ox = ((tlx + 0.5) | 0) - tlx;
-			var oy = ((tly + 0.5) | 0) - tly
-			tlx += ox;
-			tly += oy;
-			trx += ox;
-			try_ += oy;
-			brx += ox;
-			bry += oy;
-			blx += ox;
-			bly += oy;
-		}
-		if (this.angle === 0 && layer_angle === 0)
-		{
-			trx = tlx + scaledwidth;
-			try_ = tly;
-			brx = trx;
-			bry = tly + scaledheight;
-			blx = tlx;
-			bly = bry;
-			rcTex.right = 1;
-			rcTex.bottom = 1;
-		}
-		else
-		{
-			rcTex.right = floatscaledwidth / scaledwidth;
-			rcTex.bottom = floatscaledheight / scaledheight;
-		}
-		glw.quadTex(tlx, tly, trx, try_, brx, bry, blx, bly, rcTex);
-		glw.resetModelView();
-		glw.scale(layer_scale, layer_scale);
-		glw.rotateZ(-this.layer.getAngle());
-		glw.translate((this.layer.viewLeft + this.layer.viewRight) / -2, (this.layer.viewTop + this.layer.viewBottom) / -2);
-		glw.updateModelView();
-		this.last_render_tick = this.runtime.tickcount;
-	};
-	var wordsCache = [];
-	pluginProto.TokeniseWords = function (text)
-	{
-		wordsCache.length = 0;
-		var cur_word = "";
-		var ch;
-		var i = 0;
-		while (i < text.length)
-		{
-			ch = text.charAt(i);
-			if (ch === "\n")
-			{
-				if (cur_word.length)
-				{
-					wordsCache.push(cur_word);
-					cur_word = "";
-				}
-				wordsCache.push("\n");
-				++i;
-			}
-			else if (ch === " " || ch === "\t" || ch === "-")
-			{
-				do {
-					cur_word += text.charAt(i);
-					i++;
-				}
-				while (i < text.length && (text.charAt(i) === " " || text.charAt(i) === "\t"));
-				wordsCache.push(cur_word);
-				cur_word = "";
-			}
-			else if (i < text.length)
-			{
-				cur_word += ch;
-				i++;
-			}
-		}
-		if (cur_word.length)
-			wordsCache.push(cur_word);
-	};
-	var linesCache = [];
-	function allocLine()
-	{
-		if (linesCache.length)
-			return linesCache.pop();
-		else
-			return {};
-	};
-	function freeLine(l)
-	{
-		linesCache.push(l);
-	};
-	function freeAllLines(arr)
-	{
-		var i, len;
-		for (i = 0, len = arr.length; i < len; i++)
-		{
-			freeLine(arr[i]);
-		}
-		arr.length = 0;
-	};
-	pluginProto.WordWrap = function (text, lines, ctx, width, wrapbyword)
-	{
-		if (!text || !text.length)
-		{
-			freeAllLines(lines);
-			return;
-		}
-		if (width <= 2.0)
-		{
-			freeAllLines(lines);
-			return;
-		}
-		if (text.length <= 100 && text.indexOf("\n") === -1)
-		{
-			var all_width = ctx.measureText(text).width;
-			if (all_width <= width)
-			{
-				freeAllLines(lines);
-				lines.push(allocLine());
-				lines[0].text = text;
-				lines[0].width = all_width;
-				return;
-			}
-		}
-		this.WrapText(text, lines, ctx, width, wrapbyword);
-	};
-	pluginProto.WrapText = function (text, lines, ctx, width, wrapbyword)
-	{
-		var wordArray;
-		if (wrapbyword)
-		{
-			this.TokeniseWords(text);	// writes to wordsCache
-			wordArray = wordsCache;
-		}
-		else
-			wordArray = text;
-		var cur_line = "";
-		var prev_line;
-		var line_width;
-		var i;
-		var lineIndex = 0;
-		var line;
-		for (i = 0; i < wordArray.length; i++)
-		{
-			if (wordArray[i] === "\n")
-			{
-				if (lineIndex >= lines.length)
-					lines.push(allocLine());
-				line = lines[lineIndex];
-				line.text = cur_line;
-				line.width = ctx.measureText(cur_line).width;
-				lineIndex++;
-				cur_line = "";
-				continue;
-			}
-			prev_line = cur_line;
-			cur_line += wordArray[i];
-			line_width = ctx.measureText(cur_line).width;
-			if (line_width >= width)
-			{
-				if (lineIndex >= lines.length)
-					lines.push(allocLine());
-				line = lines[lineIndex];
-				line.text = prev_line;
-				line.width = ctx.measureText(prev_line).width;
-				lineIndex++;
-				cur_line = wordArray[i];
-				if (!wrapbyword && cur_line === " ")
-					cur_line = "";
-			}
-		}
-		if (cur_line.length)
-		{
-			if (lineIndex >= lines.length)
-				lines.push(allocLine());
-			line = lines[lineIndex];
-			line.text = cur_line;
-			line.width = ctx.measureText(cur_line).width;
-			lineIndex++;
-		}
-		for (i = lineIndex; i < lines.length; i++)
-			freeLine(lines[i]);
-		lines.length = lineIndex;
-	};
-	function Cnds() {};
-	Cnds.prototype.CompareText = function(text_to_compare, case_sensitive)
-	{
-		if (case_sensitive)
-			return this.text == text_to_compare;
-		else
-			return cr.equals_nocase(this.text, text_to_compare);
-	};
-	pluginProto.cnds = new Cnds();
-	function Acts() {};
-	Acts.prototype.SetText = function(param)
-	{
-		if (cr.is_number(param) && param < 1e9)
-			param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
-		var text_to_set = param.toString();
-		if (this.text !== text_to_set)
-		{
-			this.text = text_to_set;
-			this.text_changed = true;
-			this.runtime.redraw = true;
-		}
-	};
-	Acts.prototype.AppendText = function(param)
-	{
-		if (cr.is_number(param))
-			param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
-		var text_to_append = param.toString();
-		if (text_to_append)	// not empty
-		{
-			this.text += text_to_append;
-			this.text_changed = true;
-			this.runtime.redraw = true;
-		}
-	};
-	Acts.prototype.SetFontFace = function (face_, style_)
-	{
-		var newstyle = "";
-		switch (style_) {
-		case 1: newstyle = "bold"; break;
-		case 2: newstyle = "italic"; break;
-		case 3: newstyle = "bold italic"; break;
-		}
-		if (face_ === this.facename && newstyle === this.fontstyle)
-			return;		// no change
-		this.facename = face_;
-		this.fontstyle = newstyle;
-		this.updateFont();
-	};
-	Acts.prototype.SetFontSize = function (size_)
-	{
-		if (this.ptSize === size_)
-			return;
-		this.ptSize = size_;
-		this.pxHeight = Math.ceil((this.ptSize / 72.0) * 96.0) + 4;	// assume 96dpi...
-		this.updateFont();
-	};
-	Acts.prototype.SetFontColor = function (rgb)
-	{
-		var newcolor = "rgb(" + cr.GetRValue(rgb).toString() + "," + cr.GetGValue(rgb).toString() + "," + cr.GetBValue(rgb).toString() + ")";
-		if (newcolor === this.color)
-			return;
-		this.color = newcolor;
-		this.need_text_redraw = true;
-		this.runtime.redraw = true;
-	};
-	Acts.prototype.SetWebFont = function (familyname_, cssurl_)
-	{
-		if (this.runtime.isDomFree)
-		{
-			cr.logexport("[Construct 2] Text plugin: 'Set web font' not supported on this platform - the action has been ignored");
-			return;		// DC todo
-		}
-		var self = this;
-		var refreshFunc = (function () {
-							self.runtime.redraw = true;
-							self.text_changed = true;
-						});
-		if (requestedWebFonts.hasOwnProperty(cssurl_))
-		{
-			var newfacename = "'" + familyname_ + "'";
-			if (this.facename === newfacename)
-				return;	// no change
-			this.facename = newfacename;
-			this.updateFont();
-			for (var i = 1; i < 10; i++)
-			{
-				setTimeout(refreshFunc, i * 100);
-				setTimeout(refreshFunc, i * 1000);
-			}
-			return;
-		}
-		var wf = document.createElement("link");
-		wf.href = cssurl_;
-		wf.rel = "stylesheet";
-		wf.type = "text/css";
-		wf.onload = refreshFunc;
-		document.getElementsByTagName('head')[0].appendChild(wf);
-		requestedWebFonts[cssurl_] = true;
-		this.facename = "'" + familyname_ + "'";
-		this.updateFont();
-		for (var i = 1; i < 10; i++)
-		{
-			setTimeout(refreshFunc, i * 100);
-			setTimeout(refreshFunc, i * 1000);
-		}
-;
-	};
-	Acts.prototype.SetEffect = function (effect)
-	{
-		this.compositeOp = cr.effectToCompositeOp(effect);
-		cr.setGLBlend(this, effect, this.runtime.gl);
-		this.runtime.redraw = true;
-	};
-	pluginProto.acts = new Acts();
-	function Exps() {};
-	Exps.prototype.Text = function(ret)
-	{
-		ret.set_string(this.text);
-	};
-	Exps.prototype.FaceName = function (ret)
-	{
-		ret.set_string(this.facename);
-	};
-	Exps.prototype.FaceSize = function (ret)
-	{
-		ret.set_int(this.ptSize);
-	};
-	Exps.prototype.TextWidth = function (ret)
-	{
-		var w = 0;
-		var i, len, x;
-		for (i = 0, len = this.lines.length; i < len; i++)
-		{
-			x = this.lines[i].width;
-			if (w < x)
-				w = x;
-		}
-		ret.set_int(w);
-	};
-	Exps.prototype.TextHeight = function (ret)
-	{
-		ret.set_int(this.lines.length * (this.pxHeight + this.line_height_offset) - this.line_height_offset);
-	};
-	pluginProto.exps = new Exps();
-}());
-;
-;
 cr.plugins_.TextBox = function(runtime)
 {
 	this.runtime = runtime;
@@ -15866,18 +15242,6 @@ cr.getProjectModel = function() { return [
 		true
 	]
 ,	[
-		cr.plugins_.Text,
-		false,
-		true,
-		true,
-		true,
-		true,
-		true,
-		true,
-		true,
-		false
-	]
-,	[
 		cr.plugins_.TextBox,
 		false,
 		true,
@@ -16059,7 +15423,8 @@ cr.getProjectModel = function() { return [
 			false,
 			9837469744955384,
 			[
-				["images/sprite-sheet0.png", 70763, 0, 0, 467, 302, 1, 0.501071, 0.5,[],[-0.376874,-0.307947,-0.00214168,-0.42053,0.374732,-0.307947,0.498929,0,0.284796,0.168874,-0.00214168,0.496689,-0.286938,0.168874,-0.501071,0],0]
+				["images/sprite-sheet0.png", 126148, 0, 0, 467, 293, 1, 0.501071, 0.501706,[],[-0.385439,-0.317406,-0.00214136,-0.447099,0.383298,-0.317406,0.498929,-0.00341296,0.284797,0.156997,-0.00214136,0.498294,-0.286938,0.156997,-0.501071,-0.00341296],0],
+				["images/sprite-sheet1.png", 122615, 0, 0, 467, 293, 1, 0.501071, 0.501706,[],[-0.385439,-0.317406,-0.00214136,-0.447099,0.383298,-0.317406,0.498929,-0.00341296,0.284797,0.156997,-0.00214136,0.498294,-0.286938,0.156997,-0.501071,-0.00341296],0]
 			]
 			]
 		],
@@ -16200,8 +15565,8 @@ cr.getProjectModel = function() { return [
 			false,
 			5723973594909824,
 			[
-				["images/sprite2-sheet0.png", 14568, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.353333,-0.353333,0,-0.486667,0.353333,-0.353333,0.453333,0,0.353333,0.353333,0,0.486667,-0.353333,0.353333,-0.453333,0],0],
-				["images/sprite2-sheet1.png", 12499, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.326667,-0.326667,0,-0.48,0.326667,-0.326667,0.453333,0,0.326667,0.326667,0,0.486667,-0.326667,0.326667,-0.453333,0],0]
+				["images/sprite2-sheet0.png", 31443, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.353333,-0.353333,0,-0.5,0.353333,-0.353333,0.5,0,0.353333,0.353333,0,0.5,-0.353333,0.353333,-0.5,0],0],
+				["images/sprite2-sheet1.png", 31349, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.353333,-0.353333,0,-0.5,0.353333,-0.353333,0.5,0,0.353333,0.353333,0,0.5,-0.353333,0.353333,-0.5,0],0]
 			]
 			]
 		],
@@ -16240,9 +15605,9 @@ cr.getProjectModel = function() { return [
 			false,
 			9105766893630006,
 			[
-				["images/sprite3-sheet0.png", 31996, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.468,0,0.352,0.352,0,0.488,-0.352,0.352,-0.468,0],0],
-				["images/sprite3-sheet1.png", 27014, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.464,0,0.352,0.352,0,0.484,-0.352,0.352,-0.464,0],0],
-				["images/sprite3-sheet2.png", 27032, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.456,0,0.352,0.352,0,0.488,-0.352,0.352,-0.456,0],0]
+				["images/sprite3-sheet0.png", 75854, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet1.png", 64861, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet2.png", 73949, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0]
 			]
 			]
 		],
@@ -16281,9 +15646,9 @@ cr.getProjectModel = function() { return [
 			false,
 			3789944403859993,
 			[
-				["images/sprite3-sheet0.png", 31996, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.468,0,0.352,0.352,0,0.488,-0.352,0.352,-0.468,0],0],
-				["images/sprite3-sheet2.png", 27032, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.456,0,0.352,0.352,0,0.488,-0.352,0.352,-0.456,0],0],
-				["images/sprite3-sheet1.png", 27014, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.464,0,0.352,0.352,0,0.484,-0.352,0.352,-0.464,0],0]
+				["images/sprite3-sheet0.png", 75854, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet2.png", 73949, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet1.png", 64861, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0]
 			]
 			]
 		],
@@ -16322,9 +15687,9 @@ cr.getProjectModel = function() { return [
 			false,
 			1514928455280435,
 			[
-				["images/sprite3-sheet0.png", 31996, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.468,0,0.352,0.352,0,0.488,-0.352,0.352,-0.468,0],0],
-				["images/sprite3-sheet2.png", 27032, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.456,0,0.352,0.352,0,0.488,-0.352,0.352,-0.456,0],0],
-				["images/sprite3-sheet1.png", 27014, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.464,0,0.352,0.352,0,0.484,-0.352,0.352,-0.464,0],0]
+				["images/sprite3-sheet0.png", 75854, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet2.png", 73949, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet1.png", 64861, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0]
 			]
 			]
 		],
@@ -16363,9 +15728,9 @@ cr.getProjectModel = function() { return [
 			false,
 			6140889168365918,
 			[
-				["images/sprite3-sheet0.png", 31996, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.468,0,0.352,0.352,0,0.488,-0.352,0.352,-0.468,0],0],
-				["images/sprite3-sheet2.png", 27032, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.456,0,0.352,0.352,0,0.488,-0.352,0.352,-0.456,0],0],
-				["images/sprite3-sheet1.png", 27014, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.464,0,0.352,0.352,0,0.484,-0.352,0.352,-0.464,0],0]
+				["images/sprite3-sheet0.png", 75854, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet2.png", 73949, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet1.png", 64861, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0]
 			]
 			]
 		],
@@ -16404,9 +15769,9 @@ cr.getProjectModel = function() { return [
 			false,
 			4898010388486995,
 			[
-				["images/sprite3-sheet0.png", 31996, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.468,0,0.352,0.352,0,0.488,-0.352,0.352,-0.468,0],0],
-				["images/sprite3-sheet2.png", 27032, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.456,0,0.352,0.352,0,0.488,-0.352,0.352,-0.456,0],0],
-				["images/sprite3-sheet1.png", 27014, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.484,0.352,-0.352,0.464,0,0.352,0.352,0,0.484,-0.352,0.352,-0.464,0],0]
+				["images/sprite3-sheet0.png", 75854, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet2.png", 73949, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0],
+				["images/sprite3-sheet1.png", 64861, 0, 0, 250, 250, 1, 0.5, 0.5,[],[-0.352,-0.352,0,-0.5,0.352,-0.352,0.5,0,0.352,0.352,0,0.5,-0.352,0.352,-0.5,0],0]
 			]
 			]
 		],
@@ -16445,8 +15810,8 @@ cr.getProjectModel = function() { return [
 			false,
 			6628384817301956,
 			[
-				["images/sprite2-sheet0.png", 14568, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.353333,-0.353333,0,-0.486667,0.353333,-0.353333,0.453333,0,0.353333,0.353333,0,0.486667,-0.353333,0.353333,-0.453333,0],0],
-				["images/sprite2-sheet1.png", 12499, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.326667,-0.326667,0,-0.48,0.326667,-0.326667,0.453333,0,0.326667,0.326667,0,0.486667,-0.326667,0.326667,-0.453333,0],0]
+				["images/sprite2-sheet0.png", 31443, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.353333,-0.353333,0,-0.5,0.353333,-0.353333,0.5,0,0.353333,0.353333,0,0.5,-0.353333,0.353333,-0.5,0],0],
+				["images/sprite2-sheet1.png", 31349, 0, 0, 150, 150, 1, 0.5, 0.5,[],[-0.353333,-0.353333,0,-0.5,0.353333,-0.353333,0.5,0,0.353333,0.353333,0,0.5,-0.353333,0.353333,-0.5,0],0]
 			]
 			]
 		],
@@ -16908,7 +16273,8 @@ cr.getProjectModel = function() { return [
 			false,
 			7088479538508038,
 			[
-				["images/sprite19-sheet0.png", 25133, 0, 0, 201, 220, 1, 0.502488, 0.5,[],[-0.313433,-0.327273,-0.00497511,-0.5,0.303483,-0.322727,0.497512,0,0.353234,0.368182,-0.00497511,0.5,-0.358209,0.368182,-0.502488,0],0]
+				["images/sprite19-sheet0.png", 55232, 0, 0, 200, 222, 1, 0.5, 0.5,[],[-0.305,-0.324324,0,-0.5,0.305,-0.324324,0.495,0,0.355,0.369369,0,0.495495,-0.355,0.369369,-0.5,0],0],
+				["images/sprite19-sheet1.png", 60925, 0, 0, 200, 222, 1, 0.5, 0.5,[],[-0.305,-0.324324,0,-0.5,0.305,-0.324324,0.5,0,0.355,0.369369,0,0.495495,-0.355,0.369369,-0.495,0],0]
 			]
 			]
 		],
@@ -16942,7 +16308,8 @@ cr.getProjectModel = function() { return [
 			false,
 			9371834963314261,
 			[
-				["images/sprite20-sheet0.png", 39019, 0, 0, 200, 220, 1, 0.5, 0.5,[],[-0.31,-0.327273,0,-0.5,0.31,-0.327273,0.5,0,0.355,0.368182,0,0.5,-0.36,0.372727,-0.5,0],0]
+				["images/sprite20-sheet0.png", 67928, 0, 0, 200, 222, 1, 0.5, 0.5,[],[-0.305,-0.324324,0,-0.5,0.305,-0.324324,0.495,0,0.355,0.369369,0,0.495495,-0.355,0.369369,-0.5,0],0],
+				["images/sprite20-sheet1.png", 64570, 0, 0, 200, 222, 1, 0.5, 0.5,[],[-0.305,-0.324324,0,-0.5,0.305,-0.324324,0.5,0,0.355,0.369369,0,0.495495,-0.355,0.369369,-0.495,0],0]
 			]
 			]
 		],
@@ -16960,22 +16327,6 @@ cr.getProjectModel = function() { return [
 	]
 ,	[
 		"t35",
-		cr.plugins_.Text,
-		false,
-		[],
-		0,
-		0,
-		null,
-		null,
-		[
-		],
-		false,
-		false,
-		1927919416397917,
-		[]
-	]
-,	[
-		"t36",
 		cr.plugins_.Sprite,
 		false,
 		[],
@@ -17004,7 +16355,7 @@ cr.getProjectModel = function() { return [
 		[]
 	]
 ,	[
-		"t37",
+		"t36",
 		cr.plugins_.Sprite,
 		false,
 		[],
@@ -17038,7 +16389,7 @@ cr.getProjectModel = function() { return [
 		[]
 	]
 ,	[
-		"t38",
+		"t37",
 		cr.plugins_.Sprite,
 		false,
 		[],
@@ -17092,7 +16443,7 @@ cr.getProjectModel = function() { return [
 		[]
 	]
 ,	[
-		"t39",
+		"t38",
 		cr.plugins_.Sprite,
 		false,
 		[],
@@ -17126,7 +16477,7 @@ cr.getProjectModel = function() { return [
 		[]
 	]
 ,	[
-		"t40",
+		"t39",
 		cr.plugins_.Sprite,
 		false,
 		[],
@@ -17182,7 +16533,7 @@ cr.getProjectModel = function() { return [
 		[]
 	]
 ,	[
-		"t41",
+		"t40",
 		cr.plugins_.Rex_Video,
 		false,
 		[],
@@ -17195,6 +16546,95 @@ cr.getProjectModel = function() { return [
 		false,
 		false,
 		1261970449894386,
+		[]
+	]
+,	[
+		"t41",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		0,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			9293427646431758,
+			[
+				["images/sprite24-sheet0.png", 149016, 0, 0, 370, 463, 1, 0.5, 0.50108,[],[-0.354054,-0.384449,0,-0.50108,0.354054,-0.384449,0.483784,-0.00215983,0.205405,0.263499,0,0.298056,-0.205405,0.263499,-0.483784,-0.00215983],0],
+				["images/sprite24-sheet1.png", 159647, 0, 0, 370, 463, 1, 0.5, 0.50108,[],[-0.354054,-0.384449,0,-0.50108,0.354054,-0.384449,0.483784,-0.00215983,0.205405,0.263499,0,0.298056,-0.205405,0.263499,-0.483784,-0.00215983],0]
+			]
+			]
+		],
+		[
+		],
+		false,
+		false,
+		4141278696728711,
+		[]
+	]
+,	[
+		"t42",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		0,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			9428884563255609,
+			[
+				["images/sprite25-sheet0.png", 153152, 0, 0, 370, 463, 1, 0.5, 0.50108,[],[-0.356757,-0.386609,0,-0.50108,0.351351,-0.382289,0.481081,-0.00215983,0.205405,0.263499,0,0.298056,-0.205405,0.263499,-0.486486,-0.00215983],0],
+				["images/sprite25-sheet1.png", 161782, 0, 0, 370, 463, 1, 0.5, 0.50108,[],[-0.356757,-0.386609,0,-0.50108,0.351351,-0.382289,0.481081,-0.00215983,0.205405,0.263499,0,0.298056,-0.205405,0.263499,-0.486486,-0.00215983],0]
+			]
+			]
+		],
+		[
+		],
+		false,
+		false,
+		3271908349030167,
+		[]
+	]
+,	[
+		"t43",
+		cr.plugins_.Sprite,
+		false,
+		[],
+		0,
+		0,
+		null,
+		[
+			[
+			"Default",
+			5,
+			false,
+			1,
+			0,
+			false,
+			2372736447025443,
+			[
+				["images/sprite26-sheet0.png", 1115218, 0, 0, 1920, 1080, 1, 0.5, 0.5,[],[],0]
+			]
+			]
+		],
+		[
+		],
+		false,
+		false,
+		6319086377250696,
 		[]
 	]
 	],
@@ -17314,7 +16754,7 @@ cr.getProjectModel = function() { return [
 				]
 			]
 ,			[
-				[960, 4600, 0, 467, 302, 0, 0, 1, 0.501071, 0.5, 0, 0, []],
+				[960, 4600, 0, 467, 302, 0, 0, 1, 0.501071, 0.501706, 0, 0, []],
 				6,
 				9,
 				[
@@ -17330,7 +16770,7 @@ cr.getProjectModel = function() { return [
 				[
 					0,
 					"Default",
-					0,
+					1,
 					1
 				]
 			]
@@ -17413,7 +16853,7 @@ cr.getProjectModel = function() { return [
 				[
 					0,
 					"Default",
-					0,
+					1,
 					1
 				]
 			]
@@ -17715,28 +17155,6 @@ cr.getProjectModel = function() { return [
 				]
 			]
 ,			[
-				[154, 206, 0, 236, 207, 0, 0, 1, 0.5, 0.502415, 0, 0, []],
-				27,
-				24,
-				[
-				],
-				[
-				[
-					0,
-					1.5,
-					0,
-					0,
-					0
-				]
-				],
-				[
-					1,
-					"Default",
-					0,
-					1
-				]
-			]
-,			[
 				[1756, 206, 0, 236, 207, 0, 0, 1, 0.5, 0.502415, 0, 0, []],
 				28,
 				25,
@@ -17830,29 +17248,7 @@ cr.getProjectModel = function() { return [
 				]
 			]
 ,			[
-				[1532, 465, 0, 201, 220, 0, 0, 1, 0.502488, 0.5, 0, 0, []],
-				33,
-				29,
-				[
-				],
-				[
-				[
-					0,
-					1,
-					0,
-					0,
-					0
-				]
-				],
-				[
-					1,
-					"Default",
-					0,
-					1
-				]
-			]
-,			[
-				[364, 465, 0, 200, 220, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				[364, 465, 0, 200, 222, 0, 0, 1, 0.5, 0.5, 0, 0, []],
 				34,
 				30,
 				[
@@ -17869,28 +17265,52 @@ cr.getProjectModel = function() { return [
 				[
 					1,
 					"Default",
+					1,
+					1
+				]
+			]
+,			[
+				[154, 206, 0, 236, 207, 0, 0, 1, 0.5, 0.502415, 0, 0, []],
+				27,
+				24,
+				[
+				],
+				[
+				[
+					0,
+					1.5,
+					0,
+					0,
+					0
+				]
+				],
+				[
+					1,
+					"Default",
 					0,
 					1
 				]
 			]
 ,			[
-				[1136, 656, 0, 200, 30, 0, 0, 1, 0, 0, 0, 0, []],
-				35,
-				31,
+				[1532, 465, 0, 200, 222, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				33,
+				29,
 				[
 				],
 				[
-				],
 				[
-					"Text",
 					0,
-					"12pt Arial",
-					"rgb(0,0,0)",
-					0,
-					0,
+					1,
 					0,
 					0,
 					0
+				]
+				],
+				[
+					1,
+					"Default",
+					1,
+					1
 				]
 			]
 			],
@@ -17913,7 +17333,7 @@ cr.getProjectModel = function() { return [
 			[
 			[
 				[959, 541, 0, 1920, 1080, 0, 0, 1, 0.5, 0.5, 0, 0, []],
-				37,
+				36,
 				32,
 				[
 				],
@@ -17935,7 +17355,7 @@ cr.getProjectModel = function() { return [
 			]
 ,			[
 				[965, 653, 0, 212, 378, 0, 0, 1, 0.5, 0.5, 0, 0, []],
-				38,
+				37,
 				33,
 				[
 				],
@@ -17957,7 +17377,7 @@ cr.getProjectModel = function() { return [
 			]
 ,			[
 				[961, 541, 0, 1920, 1080, 0, 0, 1, 0.5, 0.5, 0, 0, []],
-				39,
+				38,
 				34,
 				[
 				],
@@ -17979,7 +17399,7 @@ cr.getProjectModel = function() { return [
 			]
 ,			[
 				[965, 633, 0, 235, 376, 0, 0, 1, 0.502128, 0.5, 0, 0, []],
-				40,
+				39,
 				35,
 				[
 				],
@@ -18001,23 +17421,86 @@ cr.getProjectModel = function() { return [
 			]
 ,			[
 				[0, 0, 0, 1920, 1080, 0, 0, 1, 0, 0, 0, 0, []],
-				41,
+				40,
 				36,
 				[
 				],
 				[
 				],
 				[
-					"/sdcard/test.m4v",
-					"http://brandup.ro/colin30/videos/colin-abroad.m4v",
+					"http://brandup.ro/colin30/videos/1.m4v",
+					"",
 					"",
 					"",
 					0,
 					1,
-					2,
+					0,
 					0,
 					0,
 					""
+				]
+			]
+			],
+			[			]
+		]
+,		[
+			"overvideo",
+			2,
+			3278494037855083,
+			true,
+			[255, 255, 255],
+			true,
+			1,
+			1,
+			1,
+			false,
+			1,
+			0,
+			0,
+			[
+			[
+				[960, 540, 0, 1920, 1080, 0, 0, 1, 0.5, 0.5, 0, 0, []],
+				43,
+				31,
+				[
+				],
+				[
+				],
+				[
+					1,
+					"Default",
+					0,
+					1
+				]
+			]
+,			[
+				[670, 500, 0, 370, 463, 0, 0, 1, 0.5, 0.50108, 0, 0, []],
+				41,
+				37,
+				[
+				],
+				[
+				],
+				[
+					1,
+					"Default",
+					1,
+					1
+				]
+			]
+,			[
+				[1284, 500, 0, 370, 463, 0, 0, 1, 0.5, 0.50108, 0, 0, []],
+				42,
+				38,
+				[
+				],
+				[
+				],
+				[
+					1,
+					"Default",
+					1,
+					1
 				]
 			]
 			],
@@ -18330,7 +17813,7 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
-				41,
+				40,
 				cr.plugins_.Rex_Video.prototype.acts.SetVisible,
 				null,
 				7789298092346267,
@@ -18341,6 +17824,34 @@ false,false,4684423509323857,false
 					0
 				]
 				]
+			]
+,			[
+				41,
+				cr.plugins_.Sprite.prototype.acts.StopAnim,
+				null,
+				8483698069248777,
+				false
+			]
+,			[
+				39,
+				cr.plugins_.Sprite.prototype.acts.StopAnim,
+				null,
+				7959469872492264,
+				false
+			]
+,			[
+				37,
+				cr.plugins_.Sprite.prototype.acts.StopAnim,
+				null,
+				1098891355890987,
+				false
+			]
+,			[
+				6,
+				cr.plugins_.Sprite.prototype.acts.StopAnim,
+				null,
+				5547164681914777,
+				false
 			]
 			]
 		]
@@ -18621,6 +18132,83 @@ false,false,4684423509323857,false
 						]
 					]
 					]
+				]
+				]
+			]
+,			[
+				0,
+				null,
+				false,
+				null,
+				9302545744082868,
+				[
+				[
+					3,
+					cr.plugins_.TiledBg.prototype.cnds.CompareY,
+					null,
+					0,
+					false,
+					false,
+					false,
+					4009060083513735,
+					false
+					,[
+					[
+						8,
+						3
+					]
+,					[
+						0,
+						[
+							0,
+							-1500
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					3,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					4593473448913957,
+					false
+				]
+,				[
+					1,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					6567730420592351,
+					false
+				]
+,				[
+					2,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					723396305004896,
+					false
+				]
+,				[
+					4,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					2026678487480309,
+					false
+				]
+,				[
+					5,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					5367274460792394,
+					false
+				]
+,				[
+					6,
+					cr.behaviors.custom.prototype.acts.Stop,
+					"CustomMovement",
+					5017505347593114,
+					false
 				]
 				]
 			]
@@ -19014,6 +18602,54 @@ false,false,4684423509323857,false
 			],
 			[
 			[
+				6,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				3994760684376214,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				5610755648897924,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						0.05
+					]
+				]
+				]
+			]
+,			[
+				6,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				7655710136041406,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+,			[
 				2,
 				cr.behaviors.custom.prototype.acts.SetEnabled,
 				"CustomMovement",
@@ -19594,6 +19230,38 @@ false,false,4684423509323857,false
 				]
 			]
 ,			[
+				14,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				6383207123848438,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				21,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				4177855705445008,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+,			[
 				-1,
 				cr.system_object.prototype.acts.Wait,
 				null,
@@ -20050,70 +19718,6 @@ false,false,4684423509323857,false
 				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
 				null,
 				9237192679024789,
-				false
-				,[
-				[
-					0,
-					[
-						0,
-						0
-					]
-				]
-				]
-			]
-,			[
-				13,
-				cr.behaviors.custom.prototype.acts.RotateAngleOfMotionCounterClockwise,
-				"CustomMovement",
-				9014156978941919,
-				false
-				,[
-				[
-					0,
-					[
-						0,
-						360
-					]
-				]
-				]
-			]
-,			[
-				13,
-				cr.behaviors.Rotate.prototype.acts.SetSpeed,
-				"Rotate",
-				7421753102293697,
-				false
-				,[
-				[
-					0,
-					[
-						0,
-						180
-					]
-				]
-				]
-			]
-,			[
-				-1,
-				cr.system_object.prototype.acts.Wait,
-				null,
-				683578601672823,
-				false
-				,[
-				[
-					0,
-					[
-						0,
-						1
-					]
-				]
-				]
-			]
-,			[
-				13,
-				cr.behaviors.Rotate.prototype.acts.SetSpeed,
-				"Rotate",
-				5253061655290446,
 				false
 				,[
 				[
@@ -22586,66 +22190,6 @@ false,false,4684423509323857,false
 			null,
 			false,
 			null,
-			8039758613606381,
-			[
-			[
-				7,
-				cr.plugins_.Touch.prototype.cnds.OnTouchObject,
-				null,
-				1,
-				false,
-				false,
-				false,
-				9434409682645668,
-				false
-				,[
-				[
-					4,
-					14
-				]
-				]
-			]
-			],
-			[
-			[
-				14,
-				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
-				null,
-				4404623324047493,
-				false
-				,[
-				[
-					0,
-					[
-						0,
-						0
-					]
-				]
-				]
-			]
-,			[
-				14,
-				cr.plugins_.Sprite.prototype.acts.SetOpacity,
-				null,
-				2526778858817997,
-				false
-				,[
-				[
-					0,
-					[
-						0,
-						75
-					]
-				]
-				]
-			]
-			]
-		]
-,		[
-			0,
-			null,
-			false,
-			null,
 			1480970954425998,
 			[
 			[
@@ -23528,6 +23072,54 @@ false,false,4684423509323857,false
 			]
 			],
 			[
+			[
+				33,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				5250126564222804,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				9329705647312585,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						0.1
+					]
+				]
+				]
+			]
+,			[
+				33,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				3532272641294251,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
 			]
 			,[
 			[
@@ -23616,14 +23208,14 @@ false,false,4684423509323857,false
 					]
 				]
 ,				[
-					39,
+					38,
 					cr.behaviors.Fade.prototype.acts.StartFade,
 					"Fade",
 					1499096798422411,
 					false
 				]
 ,				[
-					39,
+					38,
 					cr.plugins_.Sprite.prototype.acts.SetVisible,
 					null,
 					5155771328555328,
@@ -23636,14 +23228,14 @@ false,false,4684423509323857,false
 					]
 				]
 ,				[
-					40,
+					39,
 					cr.behaviors.Fade.prototype.acts.StartFade,
 					"Fade",
 					8521039317632866,
 					false
 				]
 ,				[
-					40,
+					39,
 					cr.plugins_.Sprite.prototype.acts.SetAnim,
 					null,
 					6836951162014098,
@@ -23663,7 +23255,7 @@ false,false,4684423509323857,false
 					]
 				]
 ,				[
-					40,
+					39,
 					cr.plugins_.Sprite.prototype.acts.SetVisible,
 					null,
 					4241552684840959,
@@ -23692,20 +23284,7 @@ false,false,4684423509323857,false
 					]
 				]
 ,				[
-					32,
-					cr.plugins_.TextBox.prototype.acts.SetVisible,
-					null,
-					391058410813247,
-					false
-					,[
-					[
-						3,
-						1
-					]
-					]
-				]
-,				[
-					41,
+					40,
 					cr.plugins_.Rex_Video.prototype.acts.SetVisible,
 					null,
 					2267607572752534,
@@ -23718,7 +23297,7 @@ false,false,4684423509323857,false
 					]
 				]
 ,				[
-					41,
+					40,
 					cr.plugins_.Rex_Video.prototype.acts.Play,
 					null,
 					9452219266041909,
@@ -23812,14 +23391,14 @@ false,false,4684423509323857,false
 					]
 				]
 ,				[
-					37,
+					36,
 					cr.behaviors.Fade.prototype.acts.StartFade,
 					"Fade",
 					1103029035091547,
 					false
 				]
 ,				[
-					37,
+					36,
 					cr.plugins_.Sprite.prototype.acts.SetVisible,
 					null,
 					8473033224446015,
@@ -23832,14 +23411,14 @@ false,false,4684423509323857,false
 					]
 				]
 ,				[
-					38,
+					37,
 					cr.behaviors.Fade.prototype.acts.StartFade,
 					"Fade",
 					4589011567312691,
 					false
 				]
 ,				[
-					38,
+					37,
 					cr.plugins_.Sprite.prototype.acts.SetAnim,
 					null,
 					7740755733795506,
@@ -23859,7 +23438,7 @@ false,false,4684423509323857,false
 					]
 				]
 ,				[
-					38,
+					37,
 					cr.plugins_.Sprite.prototype.acts.SetVisible,
 					null,
 					805432501880519,
@@ -23950,6 +23529,54 @@ false,false,4684423509323857,false
 				]
 				]
 			]
+,			[
+				34,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				6217153372774259,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				2685043009402531,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						0.1
+					]
+				]
+				]
+			]
+,			[
+				34,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				7550298504306065,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
 			]
 			,[
 			[
@@ -24029,6 +23656,217 @@ false,false,4684423509323857,false
 			]
 			]
 		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			7020019487913636,
+			[
+			[
+				40,
+				cr.plugins_.Rex_Video.prototype.cnds.IsEnded,
+				null,
+				0,
+				false,
+				false,
+				false,
+				269450883224969,
+				false
+			]
+			],
+			[
+			[
+				40,
+				cr.plugins_.Rex_Video.prototype.acts.SetVisible,
+				null,
+				9823058231526525,
+				false
+				,[
+				[
+					3,
+					0
+				]
+				]
+			]
+,			[
+				43,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				4265603339567368,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+,			[
+				41,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				1617174981372155,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+,			[
+				42,
+				cr.plugins_.Sprite.prototype.acts.SetVisible,
+				null,
+				6920081434307711,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			2960772797451763,
+			[
+			[
+				7,
+				cr.plugins_.Touch.prototype.cnds.OnTouchObject,
+				null,
+				1,
+				false,
+				false,
+				false,
+				9884200279148666,
+				false
+				,[
+				[
+					4,
+					41
+				]
+				]
+			]
+			],
+			[
+			[
+				41,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				5237308188008111,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.Wait,
+				null,
+				6412721045065432,
+				false
+				,[
+				[
+					0,
+					[
+						1,
+						0.1
+					]
+				]
+				]
+			]
+,			[
+				41,
+				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
+				null,
+				4064701421925096,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+			]
+			,[
+			[
+				0,
+				null,
+				false,
+				null,
+				8483403350002043,
+				[
+				[
+					-1,
+					cr.system_object.prototype.cnds.CompareVar,
+					null,
+					0,
+					false,
+					false,
+					false,
+					5663929565437783,
+					false
+					,[
+					[
+						11,
+						"activeQuiz"
+					]
+,					[
+						8,
+						0
+					]
+,					[
+						7,
+						[
+							0,
+							1
+						]
+					]
+					]
+				]
+				],
+				[
+				[
+					40,
+					cr.plugins_.Rex_Video.prototype.acts.SetVisible,
+					null,
+					7794118276125615,
+					false
+					,[
+					[
+						3,
+						1
+					]
+					]
+				]
+,				[
+					40,
+					cr.plugins_.Rex_Video.prototype.acts.Play,
+					null,
+					527910241569358,
+					false
+				]
+				]
+			]
+			]
+		]
 		]
 	]
 	],
@@ -24045,7 +23883,7 @@ false,false,4684423509323857,false
 	false,
 	0,
 	true,
-	37,
+	39,
 	false,
 	[
 	]

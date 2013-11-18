@@ -1,0 +1,8 @@
+@font-face {
+    font-family: 'ITCSerifGothicLTLight';
+    src: url('lte50297.eot');
+    src: url('lte50297.eot') format('embedded-opentype'),
+         url('lte50297.woff') format('woff'),
+         url('lte50297.ttf') format('truetype'),
+         url('lte50297.svg#ITCSerifGothicLTLight') format('svg');
+}

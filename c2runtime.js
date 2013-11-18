@@ -20416,6 +20416,13 @@ false,false,3240496362522863,false
 			],
 			[
 			[
+				20,
+				cr.plugins_.TextBox.prototype.acts.SetBlur,
+				null,
+				372132668497802,
+				false
+			]
+,			[
 				18,
 				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
 				null,
@@ -20462,13 +20469,6 @@ false,false,3240496362522863,false
 					]
 				]
 				]
-			]
-,			[
-				20,
-				cr.plugins_.TextBox.prototype.acts.SetBlur,
-				null,
-				372132668497802,
-				false
 			]
 			]
 			,[

@@ -11383,7 +11383,6 @@ cr.plugins_.Rex_Video = function(runtime)
         this.elem.poster = this.properties[3];
         this.elem.autoplay = (this.properties[4]==1);
         this.elem.controls = (this.properties[5]==1);
-        this.elem.autobuffer = (this.properties[5]==1);
         this.elem.preload = ["auto","metadata","none"][this.properties[6]];
         this.elem.loop = (this.properties[7]==1);
         this.elem.muted = (this.properties[8]==1);
@@ -15475,7 +15474,7 @@ cr.getProjectModel = function() { return [
 					"/sdcard/Michelle/michelle-1.mp4",
 					"",
 					"",
-					"/sdcard/Michelle/play-video.png",
+					"http://ams.nicustanila.ro/play-video.png",
 					0,
 					1,
 					2,

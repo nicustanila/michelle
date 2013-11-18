@@ -15471,11 +15471,11 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
-					"/sdcard/Michelle/michelle-1.mp4",
+					"http://ams.nicustanila.ro/test.mp4",
 					"",
 					"",
 					"http://ams.nicustanila.ro/play-video.png",
-					0,
+					1,
 					1,
 					2,
 					0,
@@ -16246,6 +16246,13 @@ false,false,3240496362522863,false
 			],
 			[
 			[
+				25,
+				cr.plugins_.Rex_Video.prototype.acts.Pause,
+				null,
+				3936073736668909,
+				false
+			]
+,			[
 				25,
 				cr.plugins_.Rex_Video.prototype.acts.SetVisible,
 				null,
@@ -20681,6 +20688,13 @@ false,false,3240496362522863,false
 							1
 						]
 						]
+					]
+,					[
+						25,
+						cr.plugins_.Rex_Video.prototype.acts.Play,
+						null,
+						9093315181461109,
+						false
 					]
 ,					[
 						-1,

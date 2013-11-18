@@ -15475,10 +15475,10 @@ cr.getProjectModel = function() { return [
 					"/sdcard/Michelle/michelle-1.mp4",
 					"",
 					"",
-					"http://ams.nicustanila.ro/play-video.png",
+					"/sdcard/Michelle/play-video.png",
 					0,
 					1,
-					0,
+					1,
 					0,
 					0,
 					""

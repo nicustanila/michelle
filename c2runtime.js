@@ -14867,7 +14867,7 @@ cr.getProjectModel = function() { return [
 		[],
 		0,
 		0,
-		["images/instructions.png", 682262, 0],
+		["images/instructions.png", 687767, 0],
 		null,
 		[
 		],
@@ -16058,6 +16058,20 @@ cr.getProjectModel = function() { return [
 		"Event sheet 1",
 		[
 		[
+			1,
+			"btnHelpClicked",
+			0,
+			0,
+false,false,9652335183355342,false
+		]
+,		[
+			1,
+			"InstructionsOpened",
+			0,
+			0,
+false,false,4229594298009185,false
+		]
+,		[
 			1,
 			"Video5ByButton",
 			0,
@@ -19771,6 +19785,46 @@ false,false,3240496362522863,false
 			],
 			[
 			[
+				-1,
+				cr.system_object.prototype.acts.SetVar,
+				null,
+				4499226215461369,
+				false
+				,[
+				[
+					11,
+					"InstructionsOpened"
+				]
+,				[
+					7,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.SetVar,
+				null,
+				4654993681662827,
+				false
+				,[
+				[
+					11,
+					"btnHelpClicked"
+				]
+,				[
+					7,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+,			[
 				13,
 				cr.plugins_.Sprite.prototype.acts.SetAnimFrame,
 				null,
@@ -19941,6 +19995,46 @@ false,false,3240496362522863,false
 				[
 					3,
 					1
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.SetVar,
+				null,
+				2276083389072289,
+				false
+				,[
+				[
+					11,
+					"InstructionsOpened"
+				]
+,				[
+					7,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.SetVar,
+				null,
+				8742897210140242,
+				false
+				,[
+				[
+					11,
+					"btnHelpClicked"
+				]
+,				[
+					7,
+					[
+						0,
+						0
+					]
 				]
 				]
 			]
@@ -25483,6 +25577,193 @@ false,false,3240496362522863,false
 				[
 					11,
 					"quiz5Opened"
+				]
+,				[
+					7,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+			]
+		]
+,		[
+			0,
+			null,
+			false,
+			null,
+			7966858297118015,
+			[
+			[
+				4,
+				cr.plugins_.Mouse.prototype.cnds.OnObjectClicked,
+				null,
+				1,
+				false,
+				false,
+				false,
+				3474998708871531,
+				false
+				,[
+				[
+					3,
+					0
+				]
+,				[
+					3,
+					0
+				]
+,				[
+					4,
+					45
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.cnds.CompareVar,
+				null,
+				0,
+				false,
+				false,
+				false,
+				8413716144699399,
+				false
+				,[
+				[
+					11,
+					"InstructionsOpened"
+				]
+,				[
+					8,
+					0
+				]
+,				[
+					7,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.cnds.CompareVar,
+				null,
+				0,
+				false,
+				false,
+				false,
+				9639863455023439,
+				false
+				,[
+				[
+					11,
+					"btnHelpClicked"
+				]
+,				[
+					8,
+					0
+				]
+,				[
+					7,
+					[
+						0,
+						1
+					]
+				]
+				]
+			]
+			],
+			[
+			[
+				45,
+				cr.plugins_.TiledBg.prototype.acts.SetVisible,
+				null,
+				2224956728619071,
+				false
+				,[
+				[
+					3,
+					0
+				]
+				]
+			]
+,			[
+				26,
+				cr.plugins_.TiledBg.prototype.acts.SetOpacity,
+				null,
+				2548922297876974,
+				false
+				,[
+				[
+					0,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				26,
+				cr.plugins_.TiledBg.prototype.acts.SetVisible,
+				null,
+				7703052624194313,
+				false
+				,[
+				[
+					3,
+					0
+				]
+				]
+			]
+,			[
+				20,
+				cr.plugins_.TextBox.prototype.acts.SetVisible,
+				null,
+				6364443052317192,
+				false
+				,[
+				[
+					3,
+					1
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.SetVar,
+				null,
+				677599604456742,
+				false
+				,[
+				[
+					11,
+					"InstructionsOpened"
+				]
+,				[
+					7,
+					[
+						0,
+						0
+					]
+				]
+				]
+			]
+,			[
+				-1,
+				cr.system_object.prototype.acts.SetVar,
+				null,
+				8771421742718646,
+				false
+				,[
+				[
+					11,
+					"btnHelpClicked"
 				]
 ,				[
 					7,

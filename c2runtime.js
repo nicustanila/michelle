@@ -15478,7 +15478,7 @@ cr.getProjectModel = function() { return [
 					"/sdcard/Michelle/play-video.png",
 					0,
 					1,
-					1,
+					2,
 					0,
 					0,
 					""

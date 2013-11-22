@@ -14867,7 +14867,7 @@ cr.getProjectModel = function() { return [
 		[],
 		0,
 		0,
-		["images/instructions.png", 687767, 0],
+		["images/instructions.png", 690972, 0],
 		null,
 		[
 		],

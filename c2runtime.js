@@ -15471,10 +15471,10 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
-					"/sdcard/Michelle/michelle-1.mp4",
+					"http://www.brandup.ro/michelle/michelle-1.mp4",
 					"",
 					"",
-					"/sdcard/Michelle/play-video.png",
+					"http://www.brandup.ro/michelle/play-video.png",
 					0,
 					1,
 					2,
@@ -15708,10 +15708,10 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
-					"/sdcard/Michelle/michelle-4.mp4",
+					"http://www.brandup.ro/michelle/michelle-4.mp4",
 					"",
 					"",
-					"/sdcard/Michelle/play-video.png",
+					"http://www.brandup.ro/michelle/play-video.png",
 					0,
 					1,
 					0,
@@ -15936,10 +15936,10 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
-					"/sdcard/Michelle/michelle-2.mp4",
+					"http://www.brandup.ro/michelle/michelle-2.mp4",
 					"",
 					"",
-					"/sdcard/Michelle/play-video.png",
+					"http://www.brandup.ro/michelle/play-video.png",
 					0,
 					1,
 					0,
@@ -15957,10 +15957,10 @@ cr.getProjectModel = function() { return [
 				[
 				],
 				[
-					"/sdcard/Michelle/michelle-3.mp4",
+					"http://www.brandup.ro/michelle/michelle-3.mp4",
 					"",
 					"",
-					"/sdcard/Michelle/play-video.png",
+					"http://www.brandup.ro/michelle/play-video.jpg",
 					0,
 					1,
 					0,
